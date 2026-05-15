@@ -47,3 +47,34 @@ Return ONLY valid JSON, no markdown:
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type
+{ type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'API error: ' + data.error.message })
+      };
+    }
+
+    const text = data.content.map(c => c.text || '').join('').replace(/```json|```/g, '').trim();
+    const result = JSON.parse(text);
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result)
+    };
+
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
+  }
+};
