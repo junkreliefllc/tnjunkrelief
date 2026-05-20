@@ -585,27 +585,68 @@
         pricingStr
       );
 
-      const subject = encodeURIComponent(`✅ PAID Booking – ${fname} ${lname} – ${dateFormatted}`);
-      const body = encodeURIComponent(
-        `JUNK RELIEF LLC — PAID BOOKING\n\n`+
-        `CUSTOMER\n${'─'.repeat(30)}\n`+
-        `Name: ${fname} ${lname}\nPhone: ${phone}\nEmail: ${email}\nAddress: ${address||'Not provided'}\n\n`+
-        `APPOINTMENT\n${'─'.repeat(30)}\n`+
-        `Date: ${dateFormatted}\nTime: ${selTimeVal}\nDuration: ${jobDurationHrs} hrs\n\n`+
-        `PAYMENT\n${'─'.repeat(30)}\n`+
-        `Amount Paid (Deposit): $${amount}\nStripe ID: ${paymentIntent.id}\n\n`+
-        `SERVICE\n${'─'.repeat(30)}\n`+
-        `${pricingStr}\n\n`+
-        `NOTES\n${'─'.repeat(30)}\n`+
-        `${notes||'None'}`
-      );
-      window.location.href = `mailto:junkreliefllc@gmail.com?subject=${subject}&body=${body}`;
+      // Build items payload for confirmation pages
+      let itemsPayload = [];
+      if (mode === 'items') {
+        itemsPayload = CATALOG.filter(i=>qtys[i.id]>0).map(i=>({
+          name: i.label, qty: qtys[i.id], unit: i.price, sub: qtys[i.id]*i.price
+        }));
+      } else if (mode === 'load') {
+        itemsPayload = [{ name: loadLabels[selLoadKey], qty: 1, unit: loadPrices[selLoadKey]||0, sub: loadPrices[selLoadKey]||0 }];
+      } else if (mode === 'photo') {
+        itemsPayload = [{ name: 'AI Photo Estimate: ' + aiSummaryText, qty: 1, unit: aiEstimatedTotal, sub: aiEstimatedTotal }];
+      } else if (mode === 'labor') {
+        const rate = crewRates[selectedCrew];
+        itemsPayload = [{ name: selectedCrew + ' Man Crew @ $' + rate + '/hr x ' + laborHours + ' hrs', qty: 1, unit: rate*laborHours, sub: rate*laborHours }];
+      }
 
-      document.getElementById('panel-3').classList.remove('active');
-      document.getElementById('prog-3').classList.remove('active');
-      document.getElementById('prog-3').classList.add('done');
-      document.getElementById('booking-success').style.display = 'block';
-      document.getElementById('booking').scrollIntoView({behavior:'smooth',block:'start'});
+      const depositAmt  = mode==='labor' ? Math.ceil(crewRates[selectedCrew]*laborHours*0.25) : amount;
+      const totalAmt    = mode==='labor' ? crewRates[selectedCrew]*laborHours : amount;
+      const balanceAmt  = totalAmt - depositAmt;
+
+      const confirmParams = new URLSearchParams({
+        name:     fname + ' ' + lname,
+        email:    email,
+        phone:    phone,
+        address:  address || 'Clarksville, TN',
+        date:     dateFormatted,
+        time:     selTimeVal,
+        duration: jobDurationHrs,
+        total:    totalAmt,
+        deposit:  depositAmt,
+        balance:  balanceAmt,
+        stripeId: paymentIntent.id,
+        notes:    encodeURIComponent(notes || ''),
+        items:    encodeURIComponent(JSON.stringify(itemsPayload))
+      });
+
+      // Send confirmation emails to both customer and owner
+      try {
+        await fetch('/.netlify/functions/send-confirmation', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            customerName: fname + ' ' + lname,
+            email, phone,
+            address: address || 'Clarksville, TN',
+            date: dateFormatted,
+            time: selTimeVal,
+            duration: jobDurationHrs,
+            total: totalAmt,
+            deposit: depositAmt,
+            balance: balanceAmt,
+            stripeId: paymentIntent.id,
+            notes: notes || '',
+            items: itemsPayload,
+            pricingStr
+          })
+        });
+      } catch(emailErr) {
+        console.warn('Email send failed (non-fatal):', emailErr.message);
+      }
+
+      // Redirect customer to confirmation page
+      window.location.href = '/confirmation-customer.html?' + confirmParams.toString();
 
     } catch(err) {
       document.getElementById('card-errors').textContent = 'Payment failed: ' + err.message;
@@ -616,7 +657,6 @@
 
   const stripeScript = document.createElement('script');
   stripeScript.src = 'https://js.stripe.com/v3/';
-  stripeScript.onload = initStripe;
   document.head.appendChild(stripeScript);
 
   // Scroll animations
@@ -1155,6 +1195,8 @@
       if (!selDateKey) { alert('Please select a date.'); return; }
       if (!selStartHr && selStartHr !== 0) { alert('Please select a time slot.'); return; }
       buildSummaryBox();
+      // Mount Stripe elements after panel-3 becomes visible
+      setTimeout(() => { if (window.Stripe && !cardNumber) initStripe(); }, 50);
     }
     if (step===2 && currentStep===1) {
       jobDurationHrs = getJobDuration();
