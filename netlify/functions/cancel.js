@@ -65,7 +65,7 @@ exports.handler = async (event) => {
 
     // ── Remove the booked slot from Netlify Blobs ──
     try {
-      const store = getStore('bookings');
+      const store = getStore({ name: 'bookings', consistency: 'strong' });
       const raw = await store.get('all-bookings');
       let bookings = raw ? JSON.parse(raw) : {};
 
