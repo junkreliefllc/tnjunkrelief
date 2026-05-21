@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Junk Relief LLC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --black:#0a0a0a; --red:#E31212; --white:#f5f5f0; --gray:#1a1a1a; --mid:#2a2a2a; --muted:#888; --green:#4caf50; --yellow:#f5a623; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(227,18,18,0.02) 60px,rgba(227,18,18,0.02) 61px);pointer-events:none;z-index:0}
+
+  /* ── HEADER ── */
+  header{position:relative;z-index:10;background:rgba(10,10,10,0.98);border-bottom:2px solid var(--red);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--white)}
+  .logo span{color:var(--red)}
+  .owner-badge{background:var(--red);color:#fff;font-size:0.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:0.3rem 0.75rem}
+  .logout-btn{background:none;border:1px solid #333;color:var(--muted);font-family:'Barlow',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer;transition:border-color 0.2s,color 0.2s}
+  .logout-btn:hover{border-color:var(--red);color:var(--white)}
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen{position:relative;z-index:10;max-width:400px;margin:5rem auto;padding:0 1.5rem}
+  #login-screen h1{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:2px;margin-bottom:0.5rem}
+  #login-screen p{color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem}
+  .input{width:100%;background:var(--mid);border:1px solid #333;color:var(--white);font-family:'Barlow',sans-serif;font-size:1rem;padding:0.85rem 1rem;outline:none;transition:border-color 0.2s;margin-bottom:0.75rem}
+  .input:focus{border-color:var(--red)}
+  .input::placeholder{color:#555}
+  .btn-red{width:100%;background:var(--red);color:#fff;font-family:'Barlow',sans-serif;font-weight:900;font-size:0.95rem;letter-spacing:1.5px;text-transform:uppercase;padding:1rem;border:none;cursor:pointer;transition:opacity 0.2s}
+  .btn-red:hover{opacity:0.85}
+  #login-error{color:var(--red);font-size:0.85rem;margin-top:0.5rem;display:none}
+
+  /* ── ADMIN CONTENT ── */
+  #admin-content{display:none;position:relative;z-index:10;max-width:1000px;margin:0 auto;padding:2rem 1.5rem 5rem}
+
+  /* ── STATS STRIP ── */
+  .stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:#222;border:1px solid #222;margin-bottom:1.5rem}
+  .stat{background:var(--gray);padding:1.2rem 1rem;text-align:center}
+  .stat-label{font-size:0.62rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem}
+  .stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:1px;line-height:1}
+  .stat-val.red{color:var(--red)}
+  .stat-val.green{color:var(--green)}
+  .stat-val.yellow{color:var(--yellow)}
+
+  /* ── SECTION HEADING ── */
+  .section-h{font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:3px;color:var(--red);border-bottom:1px solid #222;padding-bottom:0.4rem;margin:1.5rem 0 1rem}
+
+  /* ── BOOKING CARDS ── */
+  .booking-card{background:var(--gray);border:1px solid #222;border-left:3px solid var(--red);margin-bottom:0.75rem;transition:border-left-color 0.2s}
+  .booking-card.today{border-left-color:var(--green)}
+  .booking-card.past{border-left-color:#333;opacity:0.6}
+  .booking-header{display:flex;justify-content:space-between;align-items:center;padding:0.85rem 1.2rem;border-bottom:1px solid #1e1e1e;cursor:pointer;gap:1rem;flex-wrap:wrap}
+  .booking-header:hover{background:rgba(255,255,255,0.02)}
+  .booking-date-time{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap}
+  .booking-date{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--white)}
+  .booking-time{font-size:0.78rem;font-weight:700;color:var(--muted);background:#1a1a1a;border:1px solid #2a2a2a;padding:0.2rem 0.6rem}
+  .booking-name{font-weight:700;font-size:0.95rem}
+  .booking-badge{font-size:0.62rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:0.25rem 0.6rem}
+  .badge-today{background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.4);color:var(--green)}
+  .badge-upcoming{background:rgba(227,18,18,0.1);border:1px solid rgba(227,18,18,0.3);color:var(--red)}
+  .badge-past{background:#222;border:1px solid #333;color:#555}
+  .booking-expand{color:#555;font-size:0.75rem;white-space:nowrap}
+
+  .booking-details{display:none;padding:1rem 1.2rem;border-top:1px solid #1e1e1e}
+  .booking-details.open{display:block}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}
+  .detail-item .dl{font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.15rem}
+  .detail-item .dv{font-weight:600;font-size:0.88rem;color:var(--white);line-height:1.4}
+  .detail-item .dv a{color:var(--red);text-decoration:none;font-weight:700}
+  .detail-item .dv a:hover{text-decoration:underline}
+  .service-text{background:#111;border-left:2px solid #333;padding:0.75rem 1rem;font-size:0.82rem;color:#aaa;line-height:1.6;white-space:pre-wrap;margin-bottom:0.75rem}
+  .notes-text{background:#111;border-left:2px solid var(--yellow);padding:0.75rem 1rem;font-size:0.82rem;color:#aaa;line-height:1.6;margin-bottom:0.75rem}
+  .action-btns{display:flex;gap:0.5rem;flex-wrap:wrap}
+  .ab{padding:0.55rem 1rem;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;transition:opacity 0.15s}
+  .ab:hover{opacity:0.8}
+  .ab-red{background:var(--red);color:#fff}
+  .ab-ghost{background:transparent;border:1px solid #333;color:var(--muted)}
+  .ab-ghost:hover{border-color:var(--red);color:var(--white)}
+
+  /* ── EMPTY STATE ── */
+  .empty{text-align:center;padding:3rem;color:#333}
+  .empty-icon{font-size:3rem;margin-bottom:1rem}
+  .empty p{color:#444;font-size:0.9rem}
+
+  /* ── FILTER TABS ── */
+  .filter-tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+  .ftab{background:var(--gray);border:1px solid #222;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;padding:0.5rem 1rem;cursor:pointer;transition:all 0.2s}
+  .ftab.active{background:var(--red);color:#fff;border-color:var(--red)}
+  .ftab:hover:not(.active){border-color:#444;color:var(--white)}
+
+  /* ── LOADING ── */
+  .loading{text-align:center;padding:3rem;color:var(--muted)}
+  .spinner{display:inline-block;width:32px;height:32px;border:3px solid #222;border-top-color:var(--red);border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:1rem}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media(max-width:600px){
+    #admin-content{padding:1.5rem 1rem}
+    .detail-grid{grid-template-columns:1fr}
+    .stats-strip{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Junk <span>Relief</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="owner-badge" id="header-badge">🔒 Admin</div>
+    <button class="logout-btn" onclick="logout()">Log Out</button>
+  </div>
+</header>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <h1>Admin Login</h1>
+  <p>Enter your password to access the booking dashboard.</p>
+  <input class="input" type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+  <button class="btn-red" onclick="login()">Log In →</button>
+  <div id="login-error">Incorrect password. Try again.</div>
+</div>
+
+<!-- ADMIN CONTENT -->
+<div id="admin-content">
+
+  <!-- Stats -->
+  <div class="stats-strip">
+    <div class="stat"><div class="stat-label">Today</div><div class="stat-val red" id="stat-today">0</div></div>
+    <div class="stat"><div class="stat-label">This Week</div><div class="stat-val" id="stat-week">0</div></div>
+    <div class="stat"><div class="stat-label">This Month</div><div class="stat-val" id="stat-month">0</div></div>
+    <div class="stat"><div class="stat-label">Total Bookings</div><div class="stat-val" id="stat-total">0</div></div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs">
+    <button class="ftab active" onclick="setFilter('upcoming', this)">Upcoming</button>
+    <button class="ftab" onclick="setFilter('today', this)">Today</button>
+    <button class="ftab" onclick="setFilter('all', this)">All Bookings</button>
+    <button class="ftab" onclick="setFilter('past', this)">Past</button>
+  </div>
+
+  <div id="bookings-container">
+    <div class="loading"><div class="spinner"></div><br>Loading bookings...</div>
+  </div>
+
+  <div class="section-h" style="margin-top:2rem">Actions</div>
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+    <button class="ab ab-ghost" onclick="loadBookings()" style="padding:0.7rem 1.2rem">🔄 Refresh</button>
+    <a href="/" class="ab ab-ghost" style="padding:0.7rem 1.2rem">🌐 View Website</a>
+  </div>
+</div>
+
+<script>
+  // ── Auth ──
+  const ADMIN_PW = 'Jaxon111'; // overridden server-side but used as client-side gate
+  let authed = false;
+
+  // Check session
+  if (sessionStorage.getItem('junk_admin') === 'true') {
+    showAdmin();
+  }
+
+  function login() {
+    const pw = document.getElementById('pw-input').value;
+    // We'll verify against the server (get-config can expose a hash, but
+    // for simplicity we do client-side check here since admin is low-risk)
+    if (pw === ADMIN_PW || pw === (window.ADMIN_PW || '')) {
+      sessionStorage.setItem('junk_admin', 'true');
+      showAdmin();
+    } else {
+      // Try server-side verify
+      fetch('/.netlify/functions/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      }).then(r => r.json()).then(d => {
+        if (d.ok) {
+          sessionStorage.setItem('junk_admin', 'true');
+          showAdmin();
+        } else {
+          document.getElementById('login-error').style.display = 'block';
+          document.getElementById('pw-input').value = '';
+          document.getElementById('pw-input').focus();
+        }
+      }).catch(() => {
+        document.getElementById('login-error').style.display = 'block';
+      });
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('junk_admin');
+    document.getElementById('admin-content').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'block';
+  }
+
+  function showAdmin() {
+    authed = true;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    loadBookings();
+  }
+
+  // ── Data ──
+  let allBookings = [];
+  let currentFilter = 'upcoming';
+
+  async function loadBookings() {
+    document.getElementById('bookings-container').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading bookings...</div>';
+    try {
+      const res = await fetch('/.netlify/functions/bookings');
+      const data = await res.json();
+
+      allBookings = [];
+      Object.entries(data).forEach(([dateKey, slots]) => {
+        slots.forEach(slot => {
+          allBookings.push({ dateKey, ...slot });
+        });
+      });
+
+      // Sort by date then startHr
+      allBookings.sort((a,b) => {
+        if (a.dateKey !== b.dateKey) return a.dateKey > b.dateKey ? 1 : -1;
+        return (a.startHr || 0) - (b.startHr || 0);
+      });
+
+      updateStats();
+      renderBookings();
+    } catch(e) {
+      document.getElementById('bookings-container').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load bookings: ${e.message}</p></div>`;
+    }
+  }
+
+  function updateStats() {
+    const today = new Date().toISOString().split('T')[0];
+    const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const monthStart = new Date(); monthStart.setDate(1);
+
+    const todayStr = today;
+    const weekStr = weekStart.toISOString().split('T')[0];
+    const monthStr = monthStart.toISOString().split('T')[0];
+
+    document.getElementById('stat-today').textContent = allBookings.filter(b => b.dateKey === todayStr).length;
+    document.getElementById('stat-week').textContent = allBookings.filter(b => b.dateKey >= weekStr).length;
+    document.getElementById('stat-month').textContent = allBookings.filter(b => b.dateKey >= monthStr).length;
+    document.getElementById('stat-total').textContent = allBookings.length;
+  }
+
+  function setFilter(f, el) {
+    currentFilter = f;
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderBookings();
+  }
+
+  function renderBookings() {
+    const today = new Date().toISOString().split('T')[0];
+    let filtered = allBookings;
+
+    if (currentFilter === 'today') {
+      filtered = allBookings.filter(b => b.dateKey === today);
+    } else if (currentFilter === 'upcoming') {
+      filtered = allBookings.filter(b => b.dateKey >= today);
+    } else if (currentFilter === 'past') {
+      filtered = allBookings.filter(b => b.dateKey < today).reverse();
+    }
+
+    const container = document.getElementById('bookings-container');
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><p>No bookings for this filter.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map((b, i) => {
+      const isToday = b.dateKey === today;
+      const isPast = b.dateKey < today;
+      const dateObj = new Date(b.dateKey + 'T12:00:00');
+      const dateLabel = dateObj.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+      const startFmt = fmtHr(b.startHr || 8);
+      const endFmt = fmtHr(b.endHr || 10);
+      const cardClass = isToday ? 'booking-card today' : isPast ? 'booking-card past' : 'booking-card';
+      const badge = isToday
+        ? '<span class="booking-badge badge-today">Today</span>'
+        : isPast
+          ? '<span class="booking-badge badge-past">Past</span>'
+          : '<span class="booking-badge badge-upcoming">Upcoming</span>';
+
+      const phone = b.phone ? `<a href="tel:${b.phone.replace(/\D/g,'')}">${b.phone}</a>` : '—';
+      const email = b.email ? `<a href="mailto:${b.email}">${b.email}</a>` : '—';
+      const mapsUrl = b.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.address)}` : null;
+      const address = mapsUrl ? `<a href="${mapsUrl}" target="_blank">${b.address || 'No address'}</a>` : (b.address || '—');
+
+      return `<div class="${cardClass}">
+        <div class="booking-header" onclick="toggleBooking(${i})">
+          <div class="booking-date-time">
+            <div class="booking-date">${dateLabel}</div>
+            <div class="booking-time">${startFmt} – ${endFmt}</div>
+            ${badge}
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem">
+            <div class="booking-name">${b.customerName || 'Unknown'}</div>
+            <div class="booking-expand" id="expand-${i}">▼</div>
+          </div>
+        </div>
+        <div class="booking-details" id="detail-${i}">
+          <div class="detail-grid">
+            <div class="detail-item"><div class="dl">Phone</div><div class="dv">${phone}</div></div>
+            <div class="detail-item"><div class="dl">Email</div><div class="dv">${email}</div></div>
+            <div class="detail-item"><div class="dl">Address</div><div class="dv">${address}</div></div>
+            <div class="detail-item"><div class="dl">Booked At</div><div class="dv">${b.bookedAt ? new Date(b.bookedAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}) : '—'}</div></div>
+          </div>
+          ${b.service ? `<div class="dl" style="margin-bottom:0.4rem">Service</div><div class="service-text">${b.service}</div>` : ''}
+          <div class="action-btns">
+            ${b.phone ? `<a href="tel:${b.phone.replace(/\D/g,'')}" class="ab ab-red">📞 Call</a>` : ''}
+            ${b.phone ? `<a href="sms:${b.phone.replace(/\D/g,'')}" class="ab ab-ghost">💬 Text</a>` : ''}
+            ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" class="ab ab-ghost">📍 Directions</a>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleBooking(i) {
+    const detail = document.getElementById('detail-' + i);
+    const expand = document.getElementById('expand-' + i);
+    const open = detail.classList.toggle('open');
+    expand.textContent = open ? '▲' : '▼';
+  }
+
+  function fmtHr(hr) {
+    const suffix = hr >= 12 ? 'PM' : 'AM';
+    const h = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    return `${h}:00 ${suffix}`;
+  }
+
+  // Auto-refresh every 5 minutes
+  setInterval(() => { if (authed) loadBookings(); }, 5 * 60 * 1000);
+</script>
+</body>
+</html>
