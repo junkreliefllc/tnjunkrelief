@@ -615,7 +615,8 @@
         selStartHr + jobDurationHrs,
         `${fname} ${lname}`,
         phone, email,
-        pricingStr
+        pricingStr,
+        paymentIntent.id
       );
 
       // Build items payload for confirmation pages
@@ -1351,12 +1352,12 @@
     }
   }
 
-  async function saveBookedSlot(dateKey, startHr, endHr, customerName, phone, email, service) {
+  async function saveBookedSlot(dateKey, startHr, endHr, customerName, phone, email, service, stripeId) {
     try {
       await fetch('/.netlify/functions/bookings', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ dateKey, startHr, endHr, customerName, phone, email, service })
+        body: JSON.stringify({ dateKey, startHr, endHr, customerName, phone, email, service, stripeId })
       });
       // Update local cache immediately
       if (!BOOKED_SLOTS[dateKey]) BOOKED_SLOTS[dateKey] = [];
