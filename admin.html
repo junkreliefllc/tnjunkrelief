@@ -153,7 +153,6 @@
 
 <script>
   // ── Auth ──
-  const ADMIN_PW = 'Jaxon111'; // overridden server-side but used as client-side gate
   let authed = false;
 
   // Check session
@@ -161,31 +160,30 @@
     showAdmin();
   }
 
-  function login() {
+  async function login() {
     const pw = document.getElementById('pw-input').value;
-    // We'll verify against the server (get-config can expose a hash, but
-    // for simplicity we do client-side check here since admin is low-risk)
-    if (pw === ADMIN_PW || pw === (window.ADMIN_PW || '')) {
-      sessionStorage.setItem('junk_admin', 'true');
-      showAdmin();
-    } else {
-      // Try server-side verify
-      fetch('/.netlify/functions/admin-auth', {
+    if (!pw) {
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+    try {
+      const res = await fetch('/.netlify/functions/admin-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pw })
-      }).then(r => r.json()).then(d => {
-        if (d.ok) {
-          sessionStorage.setItem('junk_admin', 'true');
-          showAdmin();
-        } else {
-          document.getElementById('login-error').style.display = 'block';
-          document.getElementById('pw-input').value = '';
-          document.getElementById('pw-input').focus();
-        }
-      }).catch(() => {
-        document.getElementById('login-error').style.display = 'block';
       });
+      const d = await res.json();
+      if (d.ok) {
+        sessionStorage.setItem('junk_admin', 'true');
+        showAdmin();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('pw-input').value = '';
+        document.getElementById('pw-input').focus();
+      }
+    } catch(e) {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('login-error').textContent = 'Connection error. Try again.';
     }
   }
 
