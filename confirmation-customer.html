@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Confirmed — Junk Relief LLC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --red: #E31212;
+    --red-dark: #c41010;
+    --white: #f5f5f0;
+    --gray: #1a1a1a;
+    --mid: #2a2a2a;
+    --muted: #888;
+    --green: #4caf50;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* diagonal stripe background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 60px,
+      rgba(227,18,18,0.025) 60px,
+      rgba(227,18,18,0.025) 61px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    background: rgba(10,10,10,0.97);
+    border-bottom: 2px solid var(--red);
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: var(--white);
+  }
+  .logo span { color: var(--red); }
+  .header-phone {
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .header-phone:hover { color: var(--red); }
+
+  /* ── HERO CONFIRMATION BANNER ── */
+  .confirm-hero {
+    position: relative;
+    z-index: 10;
+    background: var(--green);
+    padding: 3rem 2.5rem;
+    text-align: center;
+    overflow: hidden;
+  }
+  .confirm-hero::before {
+    content: '✓';
+    position: absolute;
+    font-size: 20rem;
+    font-family: 'Bebas Neue', sans-serif;
+    color: rgba(0,0,0,0.08);
+    right: -2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .confirm-hero .tag {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.5);
+    margin-bottom: 0.6rem;
+  }
+  .confirm-hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    letter-spacing: 2px;
+    line-height: 0.95;
+    color: #fff;
+  }
+  .confirm-hero p {
+    margin-top: 0.8rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(0,0,0,0.55);
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    position: relative;
+    z-index: 10;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--gray);
+    border: 1px solid #222;
+    margin-bottom: 1.25rem;
+  }
+  .card-header {
+    border-top: 3px solid var(--red);
+    padding: 1.2rem 1.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #222;
+  }
+  .card-header .icon { font-size: 1.3rem; }
+  .card-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 1.5px;
+    color: var(--white);
+  }
+  .card-body { padding: 1.25rem 1.5rem; }
+
+  /* ── DATA ROWS ── */
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #1f1f1f;
+    font-size: 0.9rem;
+  }
+  .data-row:last-child { border-bottom: none; }
+  .data-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 0.1rem;
+  }
+  .data-val {
+    font-weight: 600;
+    color: var(--white);
+    text-align: right;
+    line-height: 1.5;
+  }
+  .data-val.accent { color: var(--red); font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px; }
+  .data-val.green { color: var(--green); }
+
+  /* ── ITEM LIST ── */
+  .item-list { list-style: none; }
+  .item-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1f1f1f;
+    font-size: 0.9rem;
+  }
+  .item-list li:last-child { border-bottom: none; }
+  .item-list .item-name { color: var(--white); font-weight: 600; }
+  .item-list .item-amt { color: var(--red); font-weight: 700; }
+
+  /* ── TOTAL BOX ── */
+  .total-box {
+    background: rgba(227,18,18,0.07);
+    border: 1px solid rgba(227,18,18,0.25);
+    padding: 1.2rem 1.5rem;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .total-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .total-amt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--red);
+    letter-spacing: 1px;
+  }
+
+  /* ── BALANCE NOTE ── */
+  .balance-note {
+    background: #111;
+    border-left: 3px solid #333;
+    padding: 0.9rem 1.2rem;
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .balance-note strong { color: var(--white); }
+
+  /* ── NEXT STEPS ── */
+  .steps-list { list-style: none; counter-reset: steps; }
+  .steps-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #1f1f1f;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #ccc;
+  }
+  .steps-list li:last-child { border-bottom: none; }
+  .steps-list li::before {
+    content: counter(steps);
+    background: var(--red);
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ── CONTACT STRIP ── */
+  .contact-strip {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .contact-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--mid);
+    border: 1px solid #333;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--white);
+    letter-spacing: 0.5px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .contact-chip:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── STRIPE BADGE ── */
+  .stripe-badge {
+    text-align: center;
+    padding-top: 2rem;
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.5px;
+  }
+  .stripe-badge a { color: #555; text-decoration: none; }
+
+  /* ── PRINT BUTTON ── */
+  .print-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 2px solid #333;
+    color: var(--muted);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0.85rem;
+    cursor: pointer;
+    margin-top: 0.75rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .print-btn:hover { border-color: var(--red); color: var(--white); }
+
+  @media print {
+    header, .print-btn, .contact-strip { display: none; }
+    body::before { display: none; }
+    .confirm-hero { background: #222; }
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 1rem 1.2rem; }
+    main { padding: 2rem 1.2rem 4rem; }
+    .confirm-hero { padding: 2rem 1.2rem; }
+    .card-body, .card-header { padding-left: 1.1rem; padding-right: 1.1rem; }
+    .data-row { flex-direction: column; gap: 0.2rem; }
+    .data-val { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">Junk <span>Relief</span></a>
+  <a href="tel:9315610431" class="header-phone">📞 (931) 561-0431</a>
+</header>
+
+<div class="confirm-hero">
+  <div class="tag">Booking Confirmed</div>
+  <h1>You're All<br>Set!</h1>
+  <p>Your deposit has been charged and your appointment is locked in. We'll see you soon.</p>
+</div>
+
+<main>
+
+  <!-- APPOINTMENT -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">📅</span>
+      <h2>Your Appointment</h2>
+    </div>
+    <div class="card-body">
+      <div class="data-row">
+        <span class="data-label">Date</span>
+        <span class="data-val" id="c-date">Thursday, May 22, 2025</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Time Window</span>
+        <span class="data-val" id="c-time">9:00 AM – 11:00 AM</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Est. Duration</span>
+        <span class="data-val" id="c-duration">2 hours</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Location</span>
+        <span class="data-val" id="c-address">123 Main St, Clarksville TN</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICE SUMMARY -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">🚛</span>
+      <h2>Service Summary</h2>
+    </div>
+    <div class="card-body">
+      <ul class="item-list" id="c-item-list">
+        <!-- populated by JS -->
+      </ul>
+      <div class="total-box">
+        <span class="total-label">Estimated Total</span>
+        <span class="total-amt" id="c-total">$0</span>
+      </div>
+      <div class="balance-note">
+        <strong>Deposit charged today:</strong> <span id="c-deposit">$0</span> &nbsp;·&nbsp;
+        <strong>Balance due after service:</strong> <span id="c-balance">$0</span><br>
+        <span style="margin-top:0.3rem;display:block">Final price confirmed on-site before work begins. No surprise fees, ever.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT RECEIPT -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">💳</span>
+      <h2>Payment Receipt</h2>
+    </div>
+    <div class="card-body">
+      <div class="data-row">
+        <span class="data-label">Amount Charged</span>
+        <span class="data-val accent" id="c-charged">$0</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Status</span>
+        <span class="data-val green">✅ Payment Successful</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Stripe ID</span>
+        <span class="data-val" id="c-stripe-id" style="font-size:0.78rem;color:#666;font-family:monospace">pi_xxxxxxxxxxxxxxxx</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Billed To</span>
+        <span class="data-val" id="c-name">John Smith</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">📋</span>
+      <h2>What Happens Next</h2>
+    </div>
+    <div class="card-body">
+      <ol class="steps-list">
+        <li>You'll receive a confirmation email at <strong id="c-email">your@email.com</strong> with these details.</li>
+        <li>Our crew will call or text you <strong>30–60 minutes before arrival</strong> on the day of your appointment.</li>
+        <li>We'll walk through the job together and <strong>confirm the final price</strong> before any work begins.</li>
+        <li>Once the job is done, pay the remaining balance. We accept cash, card, Venmo, or CashApp.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">💬</span>
+      <h2>Questions? Reach Us Directly</h2>
+    </div>
+    <div class="card-body">
+      <div class="contact-strip">
+        <a href="tel:9315610431" class="contact-chip">📞 (931) 561-0431</a>
+        <a href="sms:9315610431" class="contact-chip">💬 Text Us</a>
+        <a href="mailto:junkreliefllc@gmail.com" class="contact-chip">✉️ junkreliefllc@gmail.com</a>
+      </div>
+    </div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+
+  <div class="stripe-badge">
+    Payments processed securely by <a href="https://stripe.com" target="_blank">Stripe</a>. We never store your card details.
+  </div>
+
+</main>
+
+<script>
+  // ── Pull booking data from URL params (set by index.html on success) ──
+  // Expected params: name, email, phone, address, date, time, duration,
+  //                  items (JSON), total, deposit, balance, charged, stripeId, notes
+
+  const p = new URLSearchParams(window.location.search);
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  }
+
+  set('c-date',      p.get('date')     || 'See your email for details');
+  set('c-time',      p.get('time')     || '—');
+  set('c-duration',  p.get('duration') ? p.get('duration') + ' hours' : '—');
+  set('c-address',   p.get('address')  || 'Clarksville, TN');
+  set('c-total',     p.get('total')    ? '$' + p.get('total') : '$—');
+  set('c-deposit',   p.get('deposit')  ? '$' + p.get('deposit') : '$—');
+  set('c-balance',   p.get('balance')  ? '$' + p.get('balance') : '$—');
+  set('c-charged',   p.get('deposit')  ? '$' + p.get('deposit') : '$—');
+  set('c-stripe-id', p.get('stripeId') || '—');
+  set('c-name',      p.get('name')     || '—');
+  set('c-email',     p.get('email')    ? p.get('email') : 'the email you provided');
+
+  // Build item list
+  const itemsRaw = p.get('items');
+  const list = document.getElementById('c-item-list');
+  if (itemsRaw) {
+    try {
+      const items = JSON.parse(decodeURIComponent(itemsRaw));
+      list.innerHTML = items.map(it =>
+        `<li><span class="item-name">${it.qty ? it.qty + '×' : ''} ${it.name}</span><span class="item-amt">$${it.sub || it.price || '—'}</span></li>`
+      ).join('');
+    } catch(e) {
+      list.innerHTML = `<li><span class="item-name">${decodeURIComponent(itemsRaw)}</span><span class="item-amt"></span></li>`;
+    }
+  } else {
+    list.innerHTML = '<li><span class="item-name" style="color:#666">See booking details in your confirmation email.</span><span></span></li>';
+  }
+
+  // Update email link in next steps
+  const emailParam = p.get('email');
+  if (emailParam) {
+    document.querySelector('#c-email').parentElement.innerHTML =
+      document.querySelector('#c-email').parentElement.innerHTML
+        .replace('the email you provided', emailParam);
+  }
+</script>
+</body>
+</html>
