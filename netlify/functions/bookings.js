@@ -45,7 +45,7 @@ exports.handler = async (event) => {
   // POST — save a new booked slot
   if (event.httpMethod === 'POST') {
     try {
-      const { dateKey, startHr, endHr, customerName, phone, email, service } = JSON.parse(event.body);
+      const { dateKey, startHr, endHr, customerName, phone, email, service, stripeId } = JSON.parse(event.body);
 
       if (!dateKey || startHr === undefined || endHr === undefined) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
@@ -67,6 +67,7 @@ exports.handler = async (event) => {
         phone: phone || '',
         email: email || '',
         service: service || '',
+        stripeId: stripeId || '',
         bookedAt: new Date().toISOString()
       });
 
