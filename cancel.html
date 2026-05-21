@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancel Booking — Junk Relief LLC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --black:#0a0a0a; --red:#E31212; --white:#f5f5f0; --gray:#1a1a1a; --mid:#2a2a2a; --muted:#888; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(227,18,18,0.02) 60px,rgba(227,18,18,0.02) 61px);pointer-events:none}
+  header{position:relative;z-index:10;background:rgba(10,10,10,0.98);border-bottom:2px solid var(--red);padding:1.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;text-decoration:none;color:var(--white)}
+  .logo span{color:var(--red)}
+  main{position:relative;z-index:10;max-width:580px;margin:0 auto;padding:4rem 2rem}
+
+  .card{background:var(--gray);border:1px solid #222;border-top:3px solid var(--red);margin-bottom:1rem}
+  .card-body{padding:1.5rem}
+  h1{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:2px;margin-bottom:0.5rem}
+  .subtitle{color:var(--muted);font-size:0.95rem;line-height:1.6;margin-bottom:1.5rem}
+
+  .data-row{display:flex;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid #1e1e1e;font-size:0.9rem}
+  .data-row:last-child{border-bottom:none}
+  .data-label{font-size:0.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding-top:0.15rem}
+  .data-val{font-weight:600;color:var(--white)}
+
+  .policy-box{background:#111;border-left:3px solid #333;padding:1rem 1.2rem;margin:1rem 0;font-size:0.85rem;color:var(--muted);line-height:1.7}
+  .policy-box strong{color:var(--white)}
+  .policy-box.eligible{border-left-color:#4caf50}
+  .policy-box.not-eligible{border-left-color:var(--red)}
+
+  .btn{width:100%;padding:1rem;font-family:'Barlow',sans-serif;font-weight:900;font-size:0.95rem;letter-spacing:1.5px;text-transform:uppercase;border:none;cursor:pointer;transition:opacity 0.2s,transform 0.1s;margin-top:0.75rem}
+  .btn:hover{opacity:0.85;transform:translateY(-1px)}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-ghost{background:transparent;border:2px solid #333;color:var(--muted)}
+  .btn-ghost:hover{border-color:var(--red);color:var(--white)}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+  #result{display:none;text-align:center;padding:2rem}
+  #result .result-icon{font-size:3.5rem;margin-bottom:1rem}
+  #result h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;margin-bottom:0.75rem}
+  #result p{color:var(--muted);font-size:0.95rem;line-height:1.6}
+  #result a{color:var(--red);font-weight:700;text-decoration:none}
+
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.5rem}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <a href="/" class="logo">Junk <span>Relief</span></a>
+  <a href="tel:9315610431" style="color:var(--muted);font-weight:700;font-size:0.85rem;text-decoration:none">📞 (931) 561-0431</a>
+</header>
+
+<main>
+  <div id="cancel-form">
+    <h1>Cancel Booking</h1>
+    <p class="subtitle">Review your booking details below before cancelling.</p>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="data-row"><span class="data-label">Name</span><span class="data-val" id="c-name">—</span></div>
+        <div class="data-row"><span class="data-label">Appointment</span><span class="data-val" id="c-date">—</span></div>
+        <div class="data-row"><span class="data-label">Time</span><span class="data-val" id="c-time">—</span></div>
+      </div>
+    </div>
+
+    <div class="policy-box" id="policy-box">
+      Checking refund eligibility...
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <p style="font-size:0.88rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">Are you sure you want to cancel? This action cannot be undone. If you need to reschedule instead, please call us.</p>
+        <a href="tel:9315610431" class="btn btn-ghost" style="display:block;text-align:center;text-decoration:none;padding:0.85rem;font-weight:900;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;border:2px solid #333;color:var(--muted)">📞 Call to Reschedule Instead</a>
+        <button class="btn btn-red" id="cancel-btn" onclick="confirmCancel()">Cancel My Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="result-icon" id="result-icon">✅</div>
+    <h2 id="result-title">Booking Cancelled</h2>
+    <p id="result-msg">Your booking has been cancelled.</p>
+    <a href="/" style="display:inline-block;margin-top:1.5rem;color:var(--red);font-weight:700">← Back to Junk Relief</a>
+  </div>
+</main>
+
+<script>
+  const p = new URLSearchParams(window.location.search);
+  const token   = p.get('token')   || '';
+  const dateKey = p.get('dateKey') || '';
+  const startHr = parseInt(p.get('startHr') || '8');
+  const stripeId = p.get('stripeId') || '';
+  const name    = p.get('name')    || '—';
+  const email   = p.get('email')   || '';
+  const phone   = p.get('phone')   || '';
+  const date    = p.get('date')    || dateKey;
+  const time    = p.get('time')    || '—';
+
+  document.getElementById('c-name').textContent = name;
+  document.getElementById('c-date').textContent = date;
+  document.getElementById('c-time').textContent = time;
+
+  // Check refund eligibility
+  const appointmentDate = new Date(`${dateKey}T${String(startHr).padStart(2,'0')}:00:00`);
+  const hoursUntil = (appointmentDate - new Date()) / (1000 * 60 * 60);
+  const eligible = hoursUntil >= 24;
+  const policyBox = document.getElementById('policy-box');
+
+  if (eligible) {
+    policyBox.className = 'policy-box eligible';
+    policyBox.innerHTML = `✅ <strong>Full refund eligible.</strong> Your appointment is more than 24 hours away so your deposit will be automatically refunded within 5–10 business days if you cancel now.`;
+  } else {
+    policyBox.className = 'policy-box not-eligible';
+    policyBox.innerHTML = `⚠️ <strong>No refund.</strong> Your appointment is less than 24 hours away. Cancelling now will <strong>not</strong> result in a deposit refund. Call us at <a href="tel:9315610431" style="color:var(--red)">(931) 561-0431</a> if you need to discuss this.`;
+  }
+
+  async function confirmCancel() {
+    const btn = document.getElementById('cancel-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Cancelling...';
+
+    try {
+      const res = await fetch('/.netlify/functions/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, dateKey, startHr, stripeId, customerName: name, email, phone, date, time })
+      });
+      const data = await res.json();
+
+      document.getElementById('cancel-form').style.display = 'none';
+      const result = document.getElementById('result');
+      result.style.display = 'block';
+
+      if (data.success) {
+        document.getElementById('result-icon').textContent = '✅';
+        document.getElementById('result-title').textContent = 'Booking Cancelled';
+        document.getElementById('result-msg').innerHTML = data.message +
+          (email ? `<br><br>A confirmation has been sent to <strong>${email}</strong>.` : '') +
+          `<br><br>Questions? Call <a href="tel:9315610431">(931) 561-0431</a>.`;
+      } else {
+        document.getElementById('result-icon').textContent = '❌';
+        document.getElementById('result-title').textContent = 'Something Went Wrong';
+        document.getElementById('result-msg').innerHTML = (data.error || 'Please call us to cancel manually.') +
+          `<br><br><a href="tel:9315610431">(931) 561-0431</a>`;
+      }
+    } catch(err) {
+      document.getElementById('cancel-form').style.display = 'none';
+      const result = document.getElementById('result');
+      result.style.display = 'block';
+      document.getElementById('result-icon').textContent = '❌';
+      document.getElementById('result-title').textContent = 'Error';
+      document.getElementById('result-msg').innerHTML = 'Could not process cancellation. Please call us at <a href="tel:9315610431">(931) 561-0431</a>.';
+    }
+  }
+</script>
+</body>
+</html>
