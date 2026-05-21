@@ -29,6 +29,8 @@ exports.handler = async (event) => {
       date,
       time,
       duration,
+      dateKey,
+      startHr,
       total,
       deposit,
       balance,
@@ -58,6 +60,12 @@ exports.handler = async (event) => {
     const tableStyle = `width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px`;
     const thStyle    = `padding:8px 12px;background:#222;color:#888;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;text-align:left`;
     const totalRowStyle = `background:#1a1a1a`;
+
+    // ── Cancellation token & URL (must be defined before email templates use it) ──
+    const cancelToken = Buffer.from(`${dateKey || ''}:${stripeId}`).toString('base64');
+    const cancelUrl = `https://tnjunkrelief.com/cancel.html?token=${encodeURIComponent(cancelToken)}&dateKey=${encodeURIComponent(dateKey||'')}` +
+      `&startHr=${startHr||''}&stripeId=${encodeURIComponent(stripeId)}&name=${encodeURIComponent(customerName)}` +
+      `&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone||'')}&date=${encodeURIComponent(date||'')}&time=${encodeURIComponent(time||'')}`;
 
     // ── CUSTOMER EMAIL ──────────────────────────────────────────────────────
     const customerHtml = `
@@ -174,6 +182,16 @@ exports.handler = async (event) => {
           <td style="color:#555;font-size:11px;letter-spacing:1px">STRIPE PAYMENT ID</td>
           <td style="color:#444;font-size:11px;font-family:monospace;text-align:right">${stripeId || '—'}</td>
         </tr>
+      </table>
+    </td></tr>
+
+    <!-- Cancel Link -->
+    <tr><td style="padding:16px 32px 0">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #1e1e1e;padding:12px 16px">
+        <tr><td style="color:#555;font-size:12px;line-height:1.6">
+          Need to cancel? You can cancel for a full refund up to 24 hours before your appointment.<br>
+          <a href="${cancelUrl}" style="color:#666;font-size:11px">Cancel this booking →</a>
+        </td></tr>
       </table>
     </td></tr>
 
