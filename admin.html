@@ -314,6 +314,13 @@
             ${b.phone ? `<a href="sms:${b.phone.replace(/\D/g,'')}" class="ab ab-ghost">💬 Text</a>` : ''}
             ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" class="ab ab-ghost">📍 Directions</a>` : ''}
           </div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #222">
+            <div style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:0.5rem">Manage Booking</div>
+            <div class="action-btns">
+              <button class="ab" style="background:#2a2a2a;border:1px solid #f5a623;color:#f5a623" onclick="deleteBooking('${b.dateKey}', ${b.startHr || 0}, '${b.stripeId || ''}', true, '${(b.customerName || 'this customer').replace(/'/g,'')}')">💸 Cancel & Refund</button>
+              <button class="ab ab-ghost" onclick="deleteBooking('${b.dateKey}', ${b.startHr || 0}, '${b.stripeId || ''}', false, '${(b.customerName || 'this customer').replace(/'/g,'')}')">🗑 Remove Only</button>
+            </div>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -331,6 +338,40 @@
     const h = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
     return `${h}:00 ${suffix}`;
   }
+
+  // ── Delete booking (with optional refund) ──
+  async function deleteBooking(dateKey, startHr, stripeId, refund, customerName) {
+    const action = refund ? 'Cancel & Refund' : 'Remove Only (no refund)';
+    const msg = refund
+      ? `Cancel ${customerName}'s booking AND refund their deposit?\n\nThis will:\n• Process a full refund through Stripe\n• Remove the booking from the calendar\n• Cannot be undone`
+      : `Remove ${customerName}'s booking from the calendar?\n\nThis will:\n• Free up the time slot\n• NOT issue a refund (use Cancel & Refund for that)\n• Cannot be undone`;
+
+    if (!confirm(msg)) return;
+
+    const pw = prompt('Confirm your admin password to proceed:');
+    if (!pw) return;
+
+    try {
+      const res = await fetch('/.netlify/functions/admin-delete-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, dateKey, startHr, stripeId, refund })
+      });
+      const data = await res.json();
+      if (data.success) {
+        const successMsg = data.refunded
+          ? `✅ Booking cancelled and $${data.refundAmount} refunded successfully.`
+          : '✅ Booking removed from calendar.';
+        alert(successMsg);
+        loadBookings();
+      } else {
+        alert('❌ Error: ' + (data.error || 'Could not complete action.'));
+      }
+    } catch(err) {
+      alert('❌ Network error: ' + err.message);
+    }
+  }
+  window.deleteBooking = deleteBooking;
 
   // Auto-refresh every 5 minutes
   setInterval(() => { if (authed) loadBookings(); }, 5 * 60 * 1000);
