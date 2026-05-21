@@ -12,7 +12,13 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  const store = getStore('bookings');
+  let store;
+  try {
+    store = getStore({ name: 'bookings', consistency: 'strong' });
+  } catch(initErr) {
+    console.error('Failed to init blob store:', initErr.message);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Blob store init failed: ' + initErr.message }) };
+  }
 
   // GET — return all booked slots
   if (event.httpMethod === 'GET') {
@@ -26,6 +32,7 @@ exports.handler = async (event) => {
       }
       return { statusCode: 200, headers, body: JSON.stringify(bookings) };
     } catch(err) {
+      console.error('GET error:', err.message);
       return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
     }
   }
@@ -39,7 +46,6 @@ exports.handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
       }
 
-      // Load existing bookings
       let bookings = {};
       try {
         const raw = await store.get('all-bookings');
@@ -48,7 +54,6 @@ exports.handler = async (event) => {
         bookings = {};
       }
 
-      // Add new slot
       if (!bookings[dateKey]) bookings[dateKey] = [];
       bookings[dateKey].push({
         startHr,
@@ -64,6 +69,7 @@ exports.handler = async (event) => {
 
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     } catch(err) {
+      console.error('POST error:', err.message);
       return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
     }
   }
