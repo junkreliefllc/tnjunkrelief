@@ -68,8 +68,8 @@ exports.handler = async (event) => {
       const store = getStore({
         name: 'bookings',
         consistency: 'strong',
-        siteID: process.env.NETLIFY_SITE_ID,
-        token: process.env.NETLIFY_BLOBS_TOKEN
+        siteID: process.env.BLOBS_SITE_ID,
+        token: process.env.BLOBS_TOKEN
       });
       const raw = await store.get('all-bookings');
       let bookings = raw ? JSON.parse(raw) : {};
