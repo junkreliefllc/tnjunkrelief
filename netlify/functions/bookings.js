@@ -14,7 +14,12 @@ exports.handler = async (event) => {
 
   let store;
   try {
-    store = getStore({ name: 'bookings', consistency: 'strong' });
+    store = getStore({
+      name: 'bookings',
+      consistency: 'strong',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_BLOBS_TOKEN
+    });
   } catch(initErr) {
     console.error('Failed to init blob store:', initErr.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Blob store init failed: ' + initErr.message }) };
