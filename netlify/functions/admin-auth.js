@@ -1,7 +1,7 @@
 // netlify/functions/admin-auth.js
 // Verifies admin password server-side.
 // Set ADMIN_PASSWORD in your Netlify environment variables.
-// Default fallback is 'Jaxon111' — change it in Netlify env vars anytime.
+// Set ADMIN_PASSWORD in Netlify env vars — change it anytime there to reset.
 
 exports.handler = async (event) => {
   const headers = {
@@ -16,7 +16,7 @@ exports.handler = async (event) => {
 
   try {
     const { password } = JSON.parse(event.body);
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Jaxon111';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
     if (password === ADMIN_PASSWORD) {
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
