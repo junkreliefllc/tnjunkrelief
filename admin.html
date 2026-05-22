@@ -93,10 +93,40 @@
   .spinner{display:inline-block;width:32px;height:32px;border:3px solid #222;border-top-color:var(--red);border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:1rem}
   @keyframes spin{to{transform:rotate(360deg)}}
 
+  /* ── ADMIN CALENDAR ── */
+  .cal-wrap{background:var(--gray);border:1px solid #222;border-top:3px solid var(--red);margin-bottom:1.5rem;padding:1.25rem}
+  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem}
+  .cal-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1.5px;color:var(--white)}
+  .cal-nav{display:flex;gap:0.5rem;align-items:center}
+  .cal-nav-btn{background:var(--mid);border:1px solid #333;color:var(--white);width:34px;height:34px;font-size:1rem;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center}
+  .cal-nav-btn:hover{border-color:var(--red);color:var(--red)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-dow{text-align:center;font-size:0.65rem;font-weight:800;letter-spacing:2px;color:var(--muted);padding:0.5rem 0;text-transform:uppercase}
+  .cal-cell{aspect-ratio:1/1;background:#111;border:1px solid #1e1e1e;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:all 0.15s;min-height:55px;padding:0.3rem}
+  .cal-cell:hover:not(.empty){border-color:var(--red);background:#1a1a1a}
+  .cal-cell.empty{cursor:default;opacity:0.3}
+  .cal-cell.today{border-color:var(--green);background:rgba(76,175,80,0.06)}
+  .cal-cell.selected{border-color:var(--red);background:rgba(227,18,18,0.12)}
+  .cal-cell-num{font-family:'Barlow',sans-serif;font-weight:700;font-size:0.95rem;color:var(--white)}
+  .cal-cell.today .cal-cell-num{color:var(--green)}
+  .cal-cell.past .cal-cell-num{color:#555}
+  .cal-booking-dot{position:absolute;bottom:5px;right:5px;background:var(--red);color:#fff;border-radius:50%;min-width:20px;height:20px;font-size:0.7rem;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+  .cal-clear-filter{background:var(--mid);border:1px solid #333;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer;transition:all 0.15s;display:none}
+  .cal-clear-filter:hover{border-color:var(--red);color:var(--white)}
+  .cal-clear-filter.visible{display:inline-block}
+  .cal-legend{display:flex;gap:1.2rem;margin-top:0.85rem;flex-wrap:wrap;font-size:0.7rem;color:var(--muted);letter-spacing:0.5px}
+  .cal-legend-item{display:flex;align-items:center;gap:0.4rem}
+  .cal-legend-dot{width:10px;height:10px;border-radius:50%;background:var(--red)}
+  .cal-legend-dot.today{background:var(--green)}
+
   @media(max-width:600px){
     #admin-content{padding:1.5rem 1rem}
     .detail-grid{grid-template-columns:1fr}
     .stats-strip{grid-template-columns:1fr 1fr}
+    .cal-cell{min-height:44px;padding:0.15rem}
+    .cal-cell-num{font-size:0.8rem}
+    .cal-booking-dot{min-width:16px;height:16px;font-size:0.6rem;bottom:3px;right:3px}
+    .cal-wrap{padding:1rem}
   }
 </style>
 </head>
@@ -130,6 +160,25 @@
     <div class="stat"><div class="stat-label">This Week</div><div class="stat-val" id="stat-week">0</div></div>
     <div class="stat"><div class="stat-label">This Month</div><div class="stat-val" id="stat-month">0</div></div>
     <div class="stat"><div class="stat-label">Total Bookings</div><div class="stat-val" id="stat-total">0</div></div>
+  </div>
+
+  <!-- Calendar view -->
+  <div class="cal-wrap">
+    <div class="cal-header">
+      <div class="cal-title" id="cal-title">—</div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="adminCalPrev()" title="Previous month">‹</button>
+        <button class="cal-nav-btn" onclick="adminCalToday()" title="Jump to today" style="width:auto;padding:0 0.8rem;font-size:0.75rem;letter-spacing:1px;font-weight:700">TODAY</button>
+        <button class="cal-nav-btn" onclick="adminCalNext()" title="Next month">›</button>
+        <button class="cal-clear-filter" id="cal-clear" onclick="clearCalFilter()">✕ Clear Filter</button>
+      </div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot"></div>Has bookings (number = job count)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot today"></div>Today</div>
+      <div class="cal-legend-item">Click a day to filter the list below</div>
+    </div>
   </div>
 
   <!-- Filter tabs -->
@@ -224,6 +273,7 @@
       });
 
       updateStats();
+      renderAdminCal();
       renderBookings();
     } catch(e) {
       document.getElementById('bookings-container').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load bookings: ${e.message}</p></div>`;
@@ -256,7 +306,10 @@
     const today = new Date().toISOString().split('T')[0];
     let filtered = allBookings;
 
-    if (currentFilter === 'today') {
+    // Calendar date filter takes precedence
+    if (selectedCalDate) {
+      filtered = allBookings.filter(b => b.dateKey === selectedCalDate);
+    } else if (currentFilter === 'today') {
       filtered = allBookings.filter(b => b.dateKey === today);
     } else if (currentFilter === 'upcoming') {
       filtered = allBookings.filter(b => b.dateKey >= today);
@@ -372,6 +425,95 @@
     }
   }
   window.deleteBooking = deleteBooking;
+
+  // ── Admin Calendar ──
+  let adminCalYear = new Date().getFullYear();
+  let adminCalMonth = new Date().getMonth();
+  let selectedCalDate = null; // date key string when filtering, null otherwise
+
+  function adminCalPrev() {
+    adminCalMonth--;
+    if (adminCalMonth < 0) { adminCalMonth = 11; adminCalYear--; }
+    renderAdminCal();
+  }
+  function adminCalNext() {
+    adminCalMonth++;
+    if (adminCalMonth > 11) { adminCalMonth = 0; adminCalYear++; }
+    renderAdminCal();
+  }
+  function adminCalToday() {
+    const t = new Date();
+    adminCalYear = t.getFullYear();
+    adminCalMonth = t.getMonth();
+    renderAdminCal();
+  }
+  function clearCalFilter() {
+    selectedCalDate = null;
+    document.getElementById('cal-clear').classList.remove('visible');
+    renderAdminCal();
+    renderBookings();
+  }
+
+  function renderAdminCal() {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('cal-title').textContent = monthNames[adminCalMonth] + ' ' + adminCalYear;
+
+    // Count bookings per date for this month
+    const counts = {};
+    allBookings.forEach(b => {
+      const d = new Date(b.dateKey + 'T12:00:00');
+      if (d.getFullYear() === adminCalYear && d.getMonth() === adminCalMonth) {
+        counts[b.dateKey] = (counts[b.dateKey] || 0) + 1;
+      }
+    });
+
+    const today = new Date();
+    const todayKey = today.toISOString().split('T')[0];
+    const firstDay = new Date(adminCalYear, adminCalMonth, 1).getDay();
+    const daysInMonth = new Date(adminCalYear, adminCalMonth + 1, 0).getDate();
+
+    const grid = document.getElementById('cal-grid');
+    let html = '';
+
+    // DOW headers
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+      html += `<div class="cal-dow">${d}</div>`;
+    });
+
+    // Empty cells before day 1
+    for (let i = 0; i < firstDay; i++) {
+      html += `<div class="cal-cell empty"></div>`;
+    }
+
+    // Day cells
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateKey = `${adminCalYear}-${String(adminCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const classes = ['cal-cell'];
+      if (dateKey === todayKey) classes.push('today');
+      if (dateKey < todayKey) classes.push('past');
+      if (dateKey === selectedCalDate) classes.push('selected');
+
+      const count = counts[dateKey] || 0;
+      const dot = count > 0 ? `<div class="cal-booking-dot">${count}</div>` : '';
+      html += `<div class="${classes.join(' ')}" onclick="selectCalDate('${dateKey}')">
+        <div class="cal-cell-num">${d}</div>${dot}
+      </div>`;
+    }
+
+    grid.innerHTML = html;
+  }
+
+  function selectCalDate(dateKey) {
+    selectedCalDate = (selectedCalDate === dateKey) ? null : dateKey;
+    document.getElementById('cal-clear').classList.toggle('visible', !!selectedCalDate);
+    renderAdminCal();
+    renderBookings();
+  }
+  window.selectCalDate = selectCalDate;
+  window.adminCalPrev = adminCalPrev;
+  window.adminCalNext = adminCalNext;
+  window.adminCalToday = adminCalToday;
+  window.clearCalFilter = clearCalFilter;
 
   // Auto-refresh every 5 minutes
   setInterval(() => { if (authed) loadBookings(); }, 5 * 60 * 1000);
