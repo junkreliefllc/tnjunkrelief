@@ -160,6 +160,57 @@
   .copy-btn{display:inline-block;margin-left:0.5rem;background:#2a2a2a;border:1px solid #333;color:#aaa;padding:0.3rem 0.7rem;font-size:0.7rem;font-weight:700;cursor:pointer;letter-spacing:1px}
   .copy-btn:hover{border-color:var(--red);color:var(--white)}
 
+  /* ── Pricing Mode Tabs ── */
+  .mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:1rem;background:#222;border:1px solid #222;padding:4px}
+  .mode-tab{background:#111;border:1px solid transparent;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:800;font-size:0.72rem;letter-spacing:1.2px;text-transform:uppercase;padding:0.7rem 0.5rem;cursor:pointer;transition:all 0.15s;text-align:center}
+  .mode-tab:hover{color:var(--white)}
+  .mode-tab.active{background:var(--red);color:#fff;border-color:var(--red)}
+  .mode-panel{display:none}
+  .mode-panel.active{display:block}
+
+  /* ── Item Picker ── */
+  .item-search{width:100%;background:var(--mid);border:1px solid #333;color:var(--white);padding:0.6rem 0.9rem;font-size:0.9rem;margin-bottom:0.75rem;outline:none}
+  .item-search:focus{border-color:var(--red)}
+  .item-cat-tabs{display:flex;gap:4px;margin-bottom:0.75rem;flex-wrap:wrap}
+  .item-cat-tab{background:#111;border:1px solid #222;color:var(--muted);font-size:0.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.7rem;cursor:pointer;transition:all 0.15s}
+  .item-cat-tab.active{background:var(--red);color:#fff;border-color:var(--red)}
+  .item-cat-tab:hover:not(.active){border-color:#444;color:var(--white)}
+  .item-list-scroll{max-height:280px;overflow-y:auto;background:#111;border:1px solid #1e1e1e;padding:0.5rem}
+  .item-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.6rem;border-bottom:1px solid #1e1e1e;gap:0.5rem}
+  .item-row:last-child{border-bottom:none}
+  .item-row.has-qty{background:rgba(227,18,18,0.05)}
+  .item-info{flex:1;min-width:0}
+  .item-name{font-size:0.85rem;color:var(--white);font-weight:600;line-height:1.3}
+  .item-price{font-size:0.72rem;color:var(--muted);margin-top:0.1rem}
+  .qty-ctrls{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .qty-btn{background:#222;border:1px solid #333;color:var(--white);width:26px;height:26px;font-weight:900;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center}
+  .qty-btn:hover{border-color:var(--red);background:#2a2a2a}
+  .qty-val{min-width:24px;text-align:center;font-weight:800;color:var(--white);font-size:0.9rem}
+
+  /* ── Load / Crew Cards ── */
+  .opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.6rem}
+  .opt-card{background:#111;border:1px solid #2a2a2a;padding:0.85rem 0.7rem;text-align:center;cursor:pointer;transition:all 0.15s}
+  .opt-card:hover{border-color:#444}
+  .opt-card.selected{border-color:var(--red);background:rgba(227,18,18,0.08)}
+  .opt-card-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;color:var(--white)}
+  .opt-card-price{color:var(--red);font-weight:800;font-size:0.9rem;margin-top:0.25rem}
+  .opt-card-desc{color:var(--muted);font-size:0.7rem;margin-top:0.2rem;line-height:1.3}
+
+  /* ── Hours Stepper ── */
+  .hours-stepper{display:flex;align-items:center;justify-content:center;gap:1rem;background:#111;border:1px solid #222;padding:0.85rem}
+  .hours-stepper button{background:#222;border:1px solid #333;color:#fff;width:36px;height:36px;font-size:1.2rem;font-weight:900;cursor:pointer}
+  .hours-stepper button:hover{border-color:var(--red)}
+  .hours-stepper .hours-val{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--white);min-width:50px;text-align:center;letter-spacing:1px}
+  .hours-stepper .hours-lbl{color:var(--muted);font-size:0.75rem;letter-spacing:1px;text-transform:uppercase}
+
+  /* ── Live Quote Box ── */
+  .live-quote{background:rgba(227,18,18,0.05);border:1px solid rgba(227,18,18,0.25);padding:0.85rem 1rem;margin-top:0.85rem;font-size:0.85rem}
+  .live-quote .lq-line{display:flex;justify-content:space-between;padding:0.2rem 0;color:#aaa}
+  .live-quote .lq-line strong{color:var(--white)}
+  .live-quote .lq-total{display:flex;justify-content:space-between;padding-top:0.5rem;margin-top:0.4rem;border-top:1px solid rgba(227,18,18,0.25);font-weight:900}
+  .live-quote .lq-total span:last-child{color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px}
+  .live-quote.empty{color:#444;font-style:italic;text-align:center}
+
   @media(max-width:600px){
     #admin-content{padding:1.5rem 1rem}
     .detail-grid{grid-template-columns:1fr}
@@ -306,19 +357,57 @@
         </select>
       </div>
 
-      <div class="form-section-heading">Service Details</div>
+      <div class="form-section-heading">Pricing Method</div>
+
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="items" onclick="setAdminMode('items')">📦 Items</button>
+        <button class="mode-tab" data-mode="load" onclick="setAdminMode('load')">🚛 Load Size</button>
+        <button class="mode-tab" data-mode="labor" onclick="setAdminMode('labor')">⏱ Hourly</button>
+      </div>
+
+      <!-- ITEMS MODE -->
+      <div class="mode-panel active" id="admin-mode-items">
+        <input type="text" class="item-search" id="admin-item-search" placeholder="Search items..." oninput="filterAdminItems()">
+        <div class="item-cat-tabs" id="admin-cat-tabs"></div>
+        <div class="item-list-scroll" id="admin-item-list"></div>
+      </div>
+
+      <!-- LOAD MODE -->
+      <div class="mode-panel" id="admin-mode-load">
+        <div class="opt-grid" id="admin-load-grid"></div>
+      </div>
+
+      <!-- LABOR MODE -->
+      <div class="mode-panel" id="admin-mode-labor">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem">Crew Size</div>
+        <div class="opt-grid" id="admin-crew-grid"></div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:1rem 0 0.6rem">Hours</div>
+        <div class="hours-stepper">
+          <button onclick="adjustAdminHours(-1)">−</button>
+          <div>
+            <div class="hours-val" id="admin-hours-val">2</div>
+            <div class="hours-lbl">hours</div>
+          </div>
+          <button onclick="adjustAdminHours(1)">+</button>
+        </div>
+      </div>
+
+      <!-- Live Quote -->
+      <div class="live-quote empty" id="admin-live-quote">Select items, load size, or crew to see pricing</div>
+
+      <div class="form-section-heading">Additional Notes</div>
       <div class="form-row">
-        <label>Service Description</label>
-        <textarea id="nb-service" placeholder="e.g. Garage cleanout — sofa, washer, 10 bags of junk"></textarea>
+        <label>Service Description (override / extra notes shown to customer)</label>
+        <textarea id="nb-service" placeholder="Optional — leave blank to use auto-generated description from your selections"></textarea>
       </div>
       <div class="form-grid-2">
         <div class="form-row">
-          <label>Quoted Total ($)</label>
-          <input type="number" id="nb-total" placeholder="250" min="0" step="1">
+          <label>Override Total ($)</label>
+          <input type="number" id="nb-total" placeholder="Auto from selections" min="0" step="1">
         </div>
         <div class="form-row">
-          <label>Deposit Amount ($)</label>
-          <input type="number" id="nb-deposit" placeholder="50" min="0" step="1">
+          <label>Override Deposit ($)</label>
+          <input type="number" id="nb-deposit" placeholder="Auto: 25% of total" min="0" step="1">
         </div>
       </div>
       <div class="form-row">
@@ -377,6 +466,13 @@
   if (sessionStorage.getItem('junk_admin') === 'true') {
     showAdmin();
   }
+
+  // Pre-render the pricing UI so it's ready when modal opens
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('admin-cat-tabs')) {
+      renderAdminCats(); renderAdminItems(); renderAdminLoads(); renderAdminCrews();
+    }
+  });
 
   async function login() {
     const pw = document.getElementById('pw-input').value;
@@ -561,16 +657,217 @@
     return `${h}:00 ${suffix}`;
   }
 
+  // ── Admin pricing catalog (mirrors main customer wizard) ──
+  const ADMIN_CATALOG = [
+    {id:'bs-twin',label:'Box Spring - Twin',price:25,cat:'bedroom'},{id:'bs-full',label:'Box Spring - Full',price:30,cat:'bedroom'},
+    {id:'bs-queen',label:'Box Spring - Queen',price:30,cat:'bedroom'},{id:'bs-king',label:'Box Spring - King/Cal King',price:42,cat:'bedroom'},
+    {id:'ab-twin',label:'Adjustable Base - Twin',price:50,cat:'bedroom'},{id:'ab-full',label:'Adjustable Base - Full',price:52,cat:'bedroom'},
+    {id:'ab-queen',label:'Adjustable Base - Queen',price:60,cat:'bedroom'},{id:'ab-king',label:'Adjustable Base - King/Cal King',price:72,cat:'bedroom'},
+    {id:'mat-crib',label:'Mattress - Crib',price:25,cat:'bedroom'},{id:'mat-twin',label:'Mattress - Twin',price:35,cat:'bedroom'},
+    {id:'mat-full',label:'Mattress - Full',price:50,cat:'bedroom'},{id:'mat-queen',label:'Mattress - Queen',price:57,cat:'bedroom'},
+    {id:'mat-king',label:'Mattress - King/Cal King',price:67,cat:'bedroom'},{id:'mat-topper',label:'Mattress Topper',price:20,cat:'bedroom'},
+    {id:'bf-twin',label:'Bed Frame - Twin',price:37,cat:'bedroom'},{id:'bf-full',label:'Bed Frame - Full',price:42,cat:'bedroom'},
+    {id:'bf-queen',label:'Bed Frame - Queen',price:47,cat:'bedroom'},{id:'bf-king',label:'Bed Frame - King',price:57,cat:'bedroom'},
+    {id:'headboard',label:'Headboard',price:25,cat:'bedroom'},{id:'footboard',label:'Footboard',price:25,cat:'bedroom'},
+    {id:'nightstand',label:'Nightstand',price:20,cat:'bedroom'},{id:'armoire',label:'Armoire / Wardrobe',price:75,cat:'bedroom'},
+    {id:'bunk-dis',label:'Bunk Bed (disassembled)',price:85,cat:'bedroom'},{id:'bunk-nondis',label:'Bunk Bed (not disassembled)',price:125,cat:'bedroom'},
+    {id:'dr-sm',label:'Small Dresser',price:52,cat:'bedroom'},{id:'dr-md',label:'Medium Dresser',price:62,cat:'bedroom'},
+    {id:'dr-lg',label:'Large Dresser',price:80,cat:'bedroom'},{id:'dr-mirror',label:'Mirror - Dresser',price:35,cat:'bedroom'},
+    {id:'couch',label:'Couch / Loveseat',price:50,cat:'living'},{id:'sleeper',label:'Sleeper Sofa',price:95,cat:'living'},
+    {id:'reclsofa',label:'Reclining Sofa',price:95,cat:'living'},{id:'recliner',label:'Recliner',price:70,cat:'living'},
+    {id:'lovercl',label:'Loveseat - Reclining',price:70,cat:'living'},{id:'sec2',label:'Sectional Sofa - 2 pieces',price:75,cat:'living'},
+    {id:'sec3',label:'Sectional Sofa - 3 pieces',price:105,cat:'living'},{id:'sec4',label:'Sectional Sofa - 4 pieces',price:150,cat:'living'},
+    {id:'sec5',label:'Sectional Sofa - 5 pieces',price:185,cat:'living'},{id:'sec6',label:'Sectional Sofa - 6+ pieces',price:235,cat:'living'},
+    {id:'sec-rcl',label:'Sectional w/ Built-in Recliner',price:260,cat:'living'},{id:'sec-slp',label:'Sectional w/ Built-in Sleeper',price:285,cat:'living'},
+    {id:'coffee',label:'Coffee Table',price:25,cat:'living'},{id:'endtbl',label:'End Table',price:20,cat:'living'},
+    {id:'tvstand',label:'TV Stand / Entertainment Center',price:45,cat:'living'},{id:'shelf-sm',label:'Bookshelf - Small',price:20,cat:'living'},
+    {id:'shelf-lg',label:'Bookshelf - Large',price:35,cat:'living'},{id:'ottoman',label:'Ottoman',price:20,cat:'living'},
+    {id:'accent',label:'Accent Chair',price:25,cat:'living'},
+    {id:'fridge',label:'Refrigerator',price:87,cat:'appliance'},{id:'minifridge',label:'Mini Fridge',price:42,cat:'appliance'},
+    {id:'freezer',label:'Freezer (chest)',price:67,cat:'appliance'},{id:'washer',label:'Washing Machine',price:72,cat:'appliance'},
+    {id:'dryer',label:'Dryer',price:62,cat:'appliance'},{id:'dishwasher',label:'Dishwasher',price:52,cat:'appliance'},
+    {id:'stove',label:'Stove / Range',price:65,cat:'appliance'},{id:'microwave',label:'Microwave',price:27,cat:'appliance'},
+    {id:'waterheater',label:'Water Heater',price:85,cat:'appliance'},{id:'ac-window',label:'AC Unit (window)',price:47,cat:'appliance'},
+    {id:'ac-central',label:'AC Unit (central/split)',price:110,cat:'appliance'},
+    {id:'tv-sm',label:'TV under 40"',price:35,cat:'electronics'},{id:'tv-md',label:'TV 40"–60"',price:55,cat:'electronics'},
+    {id:'tv-lg',label:'TV over 60"',price:75,cat:'electronics'},{id:'desktop',label:'Desktop Computer',price:30,cat:'electronics'},
+    {id:'laptop',label:'Laptop',price:20,cat:'electronics'},{id:'printer',label:'Printer',price:25,cat:'electronics'},
+    {id:'monitor',label:'Monitor',price:25,cat:'electronics'},
+    {id:'offchair',label:'Office Chair',price:32,cat:'office'},{id:'desk-sm',label:'Desk - Small',price:50,cat:'office'},
+    {id:'desk-lg',label:'Desk - Large',price:72,cat:'office'},{id:'file2',label:'Filing Cabinet - 2 Drawer',price:42,cat:'office'},
+    {id:'file4',label:'Filing Cabinet - 4 Drawer',price:62,cat:'office'},
+    {id:'card-box',label:'Cardboard Box (not broken down)',price:8,cat:'cardboard'},{id:'card-10',label:'Bundle of 10 Broken Down Boxes',price:27,cat:'cardboard'},
+    {id:'card-sm',label:'Cardboard - Small Bale',price:45,cat:'cardboard'},{id:'card-md',label:'Cardboard - Medium Bale',price:82,cat:'cardboard'},
+    {id:'card-lg',label:'Cardboard - Large Bale',price:137,cat:'cardboard'},
+    {id:'mower-push',label:'Lawn Mower (push)',price:50,cat:'outdoor'},{id:'mower-ride',label:'Lawn Mower (riding)',price:130,cat:'outdoor'},
+    {id:'grill-sm',label:'Grill - Small',price:40,cat:'outdoor'},{id:'grill-lg',label:'Grill - Large',price:60,cat:'outdoor'},
+    {id:'patio-chair',label:'Patio Chair',price:17,cat:'outdoor'},{id:'patio-tbl',label:'Patio Table',price:40,cat:'outdoor'},
+    {id:'patio-set',label:'Patio Set (table + 4 chairs)',price:90,cat:'outdoor'},{id:'swing-dis',label:'Swing Set (disassembled)',price:102,cat:'outdoor'},
+    {id:'swing-nodis',label:'Swing Set (not disassembled)',price:162,cat:'outdoor'},{id:'trampoline',label:'Trampoline',price:130,cat:'outdoor'},
+    {id:'shed',label:'Shed (contents only)',price:162,cat:'outdoor'},{id:'fence',label:'Fence Panel (each)',price:16,cat:'outdoor'},
+    {id:'yardwaste',label:'Bag of Yard Waste (each)',price:11,cat:'outdoor'},
+    {id:'tread-fold',label:'Treadmill (foldable/small)',price:65,cat:'exercise'},{id:'tread-res',label:'Treadmill - Residential',price:107,cat:'exercise'},
+    {id:'tread-com',label:'Treadmill - Commercial',price:225,cat:'exercise'},{id:'bench',label:'Weight Bench',price:52,cat:'exercise'},
+    {id:'dumbbells',label:'Dumbbells (per set)',price:30,cat:'exercise'},{id:'elliptical',label:'Elliptical',price:97,cat:'exercise'},
+    {id:'statbike',label:'Stationary Bike',price:62,cat:'exercise'},{id:'rowing',label:'Rowing Machine',price:75,cat:'exercise'},
+    {id:'sqrack',label:'Weight/Squat Rack',price:107,cat:'exercise'},
+    {id:'bagmisc',label:'Bag of Miscellaneous Junk',price:12,cat:'misc'},{id:'piano',label:'Piano (upright)',price:275,cat:'misc'},
+    {id:'safe-sm',label:'Safe (under 100 lbs)',price:87,cat:'misc'},{id:'safe-lg',label:'Safe (over 100 lbs)',price:162,cat:'misc'},
+    {id:'hottub',label:'Hot Tub',price:375,cat:'misc'},{id:'pooltable',label:'Pool Table',price:225,cat:'misc'},
+    {id:'clothing',label:'Bag of Clothing',price:12,cat:'misc'},{id:'tire',label:'Tire (each)',price:17,cat:'misc'},
+    {id:'debrisblg',label:'Bag of Construction Debris',price:22,cat:'misc'}
+  ];
+  const ADMIN_CAT_NAMES = {bedroom:'Bedroom',living:'Living Room',appliance:'Appliances',electronics:'Electronics',office:'Office',cardboard:'Cardboard',outdoor:'Outdoor',exercise:'Exercise',misc:'Misc'};
+  const ADMIN_LOAD = {
+    small: {label:'Small Load', price:175, desc:'A few items'},
+    medium:{label:'Medium Load',price:325, desc:'Several items'},
+    large: {label:'Large Load', price:575, desc:'Full room or garage'},
+    xl:    {label:'XL Load',    price:850, desc:'Multiple rooms'},
+    estate:{label:'Estate Cleanout', price:null, desc:'Custom quote'}
+  };
+  const ADMIN_CREW_RATES = {1:75, 2:130, 3:175};
+
+  let adminMode = 'items';
+  let adminQtys = {};
+  let adminCat = 'all';
+  let adminItemSearch = '';
+  let adminLoadKey = null;
+  let adminCrew = null;
+  let adminHours = 2;
+
+  function setAdminMode(m) {
+    adminMode = m;
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('admin-mode-' + m).classList.add('active');
+    updateAdminLiveQuote();
+  }
+  window.setAdminMode = setAdminMode;
+
+  function renderAdminCats() {
+    const cats = ['all', ...new Set(ADMIN_CATALOG.map(i => i.cat))];
+    document.getElementById('admin-cat-tabs').innerHTML = cats.map(c =>
+      `<button class="item-cat-tab ${c===adminCat?'active':''}" onclick="setAdminCat('${c}')">${c==='all'?'All':ADMIN_CAT_NAMES[c]||c}</button>`
+    ).join('');
+  }
+  function setAdminCat(c) { adminCat = c; renderAdminCats(); renderAdminItems(); }
+  window.setAdminCat = setAdminCat;
+
+  function renderAdminItems() {
+    const filtered = ADMIN_CATALOG.filter(i => {
+      if (adminCat !== 'all' && i.cat !== adminCat) return false;
+      if (adminItemSearch && !i.label.toLowerCase().includes(adminItemSearch.toLowerCase())) return false;
+      return true;
+    });
+    document.getElementById('admin-item-list').innerHTML = filtered.map(i => {
+      const q = adminQtys[i.id] || 0;
+      return `<div class="item-row ${q>0?'has-qty':''}">
+        <div class="item-info">
+          <div class="item-name">${i.label}</div>
+          <div class="item-price">$${i.price} each</div>
+        </div>
+        <div class="qty-ctrls">
+          <button class="qty-btn" onclick="adjAdminQty('${i.id}',-1)">−</button>
+          <div class="qty-val">${q}</div>
+          <button class="qty-btn" onclick="adjAdminQty('${i.id}',1)">+</button>
+        </div>
+      </div>`;
+    }).join('') || '<div style="padding:1rem;text-align:center;color:#444;font-size:0.85rem">No items match your search.</div>';
+  }
+  function filterAdminItems() {
+    adminItemSearch = document.getElementById('admin-item-search').value;
+    renderAdminItems();
+  }
+  window.filterAdminItems = filterAdminItems;
+  function adjAdminQty(id, delta) {
+    adminQtys[id] = Math.max(0, (adminQtys[id] || 0) + delta);
+    renderAdminItems();
+    updateAdminLiveQuote();
+  }
+  window.adjAdminQty = adjAdminQty;
+
+  function renderAdminLoads() {
+    document.getElementById('admin-load-grid').innerHTML = Object.entries(ADMIN_LOAD).map(([k,v]) =>
+      `<div class="opt-card ${adminLoadKey===k?'selected':''}" onclick="selectAdminLoad('${k}')">
+        <div class="opt-card-name">${v.label}</div>
+        <div class="opt-card-price">${v.price ? '$'+v.price : 'Custom'}</div>
+        <div class="opt-card-desc">${v.desc}</div>
+      </div>`).join('');
+  }
+  function selectAdminLoad(k) { adminLoadKey = k; renderAdminLoads(); updateAdminLiveQuote(); }
+  window.selectAdminLoad = selectAdminLoad;
+
+  function renderAdminCrews() {
+    document.getElementById('admin-crew-grid').innerHTML = [1,2,3].map(n =>
+      `<div class="opt-card ${adminCrew===n?'selected':''}" onclick="selectAdminCrew(${n})">
+        <div class="opt-card-name">${n} Man${n>1?' Crew':''}</div>
+        <div class="opt-card-price">$${ADMIN_CREW_RATES[n]}/hr</div>
+      </div>`).join('');
+  }
+  function selectAdminCrew(n) { adminCrew = n; renderAdminCrews(); updateAdminLiveQuote(); }
+  window.selectAdminCrew = selectAdminCrew;
+
+  function adjustAdminHours(delta) {
+    adminHours = Math.max(1, adminHours + delta);
+    document.getElementById('admin-hours-val').textContent = adminHours;
+    updateAdminLiveQuote();
+  }
+  window.adjustAdminHours = adjustAdminHours;
+
+  function getAdminQuote() {
+    if (adminMode === 'items') {
+      const picks = ADMIN_CATALOG.filter(i => adminQtys[i.id] > 0);
+      if (picks.length === 0) return null;
+      const total = Math.max(35, picks.reduce((s,i) => s + i.price * adminQtys[i.id], 0));
+      const lines = picks.map(i => `${adminQtys[i.id]}× ${i.label}`).join(', ');
+      return { total, lines, summary: lines };
+    } else if (adminMode === 'load') {
+      if (!adminLoadKey) return null;
+      const L = ADMIN_LOAD[adminLoadKey];
+      return { total: L.price || 0, lines: L.label, summary: L.label };
+    } else if (adminMode === 'labor') {
+      if (!adminCrew) return null;
+      const rate = ADMIN_CREW_RATES[adminCrew];
+      const total = rate * adminHours;
+      const lines = `${adminCrew} Man Crew @ $${rate}/hr × ${adminHours} hrs`;
+      return { total, lines, summary: lines };
+    }
+    return null;
+  }
+
+  function updateAdminLiveQuote() {
+    const q = getAdminQuote();
+    const box = document.getElementById('admin-live-quote');
+    if (!q) { box.className = 'live-quote empty'; box.textContent = 'Select items, load size, or crew to see pricing'; return; }
+    const deposit = Math.ceil(q.total * 0.25);
+    box.className = 'live-quote';
+    box.innerHTML = `
+      <div class="lq-line"><span>${q.lines.length > 60 ? q.lines.substr(0,60) + '...' : q.lines}</span><span><strong>$${q.total}</strong></span></div>
+      <div class="lq-line"><span>Suggested Deposit (25%)</span><span>$${deposit}</span></div>
+      <div class="lq-total"><span>Estimated Total</span><span>$${q.total}</span></div>`;
+  }
+
+  function resetAdminPricing() {
+    adminMode = 'items'; adminQtys = {}; adminCat = 'all'; adminItemSearch = '';
+    adminLoadKey = null; adminCrew = null; adminHours = 2;
+    document.getElementById('admin-item-search').value = '';
+    document.getElementById('admin-hours-val').textContent = '2';
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'items'));
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.toggle('active', p.id === 'admin-mode-items'));
+    renderAdminCats(); renderAdminItems(); renderAdminLoads(); renderAdminCrews();
+    updateAdminLiveQuote();
+  }
+
   // ── Manual booking modal ──
   function openNewBookingModal() {
     document.getElementById('new-booking-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
-    // Pre-fill date with today
     const today = new Date().toISOString().split('T')[0];
     if (!document.getElementById('nb-date').value) {
       document.getElementById('nb-date').value = today;
     }
     document.getElementById('nb-result').style.display = 'none';
+    resetAdminPricing();
   }
   function closeNewBookingModal() {
     document.getElementById('new-booking-modal').classList.remove('open');
@@ -585,9 +882,13 @@
     const date = document.getElementById('nb-date').value;
     const startHr = parseInt(document.getElementById('nb-start').value);
     const duration = parseInt(document.getElementById('nb-duration').value);
-    const service = document.getElementById('nb-service').value.trim();
-    const total = parseFloat(document.getElementById('nb-total').value) || 0;
-    const deposit = parseFloat(document.getElementById('nb-deposit').value) || 0;
+    const overrideService = document.getElementById('nb-service').value.trim();
+    const service = overrideService || (quote ? quote.summary : '');
+    const overrideTotal = parseFloat(document.getElementById('nb-total').value);
+    const overrideDeposit = parseFloat(document.getElementById('nb-deposit').value);
+    const quote = getAdminQuote();
+    const total = !isNaN(overrideTotal) && overrideTotal > 0 ? overrideTotal : (quote ? quote.total : 0);
+    const deposit = !isNaN(overrideDeposit) && overrideDeposit > 0 ? overrideDeposit : (quote ? Math.ceil(quote.total * 0.25) : 0);
     const notes = document.getElementById('nb-notes').value.trim();
     const paymentMode = document.querySelector('input[name="nb-payment"]:checked').value;
     const sendEmail = document.getElementById('nb-send-email').checked;
