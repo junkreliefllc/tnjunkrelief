@@ -286,6 +286,49 @@
     <div class="loading"><div class="spinner"></div><br>Loading bookings...</div>
   </div>
 
+<!-- Adjust Job Modal -->
+<div class="modal-overlay" id="adjust-job-modal" onclick="if(event.target===this)closeAdjustModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>➕ Adjust Job</h2>
+      <button class="modal-close" onclick="closeAdjustModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="result-banner" id="adj-result"></div>
+
+      <div style="background:#111;border-left:3px solid #4caf50;padding:0.9rem 1.1rem;margin-bottom:1.25rem;font-size:0.88rem;color:#ccc;line-height:1.6">
+        Adding items for <strong style="color:#fff" id="adj-customer">—</strong><br>
+        <span style="color:#888;font-size:0.82rem">A Stripe payment link will be generated for the additional amount.</span>
+      </div>
+
+      <div class="form-row">
+        <label>Items Added (description) *</label>
+        <textarea id="adj-items" placeholder="e.g. 1 extra couch, 3 bags of clothes, broken lawn chair"></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>Additional Amount ($) *</label>
+        <input type="number" id="adj-amount" placeholder="50" min="1" step="1">
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="adj-send-email">
+        <label for="adj-send-email">📧 Email customer the payment link automatically</label>
+      </div>
+
+      <div class="form-section-heading">Confirm</div>
+      <div class="form-row">
+        <label>Your Admin Password *</label>
+        <input type="password" id="adj-password" placeholder="Required to save adjustment">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-cancel" onclick="closeAdjustModal()">Cancel</button>
+      <button class="btn-modal btn-create" onclick="submitAdjustment()" id="adj-submit">Create Payment Link</button>
+    </div>
+  </div>
+</div>
+
 <!-- Manual Booking Modal -->
 <div class="modal-overlay" id="new-booking-modal" onclick="if(event.target===this)closeNewBookingModal()">
   <div class="modal">
@@ -636,9 +679,14 @@
           <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #222">
             <div style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:0.5rem">Manage Booking</div>
             <div class="action-btns">
+              <button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50" onclick="openAdjustModal('${b.dateKey}', ${b.startHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">➕ Adjust Job</button>
               <button class="ab" style="background:#2a2a2a;border:1px solid #f5a623;color:#f5a623" onclick="deleteBooking('${b.dateKey}', ${b.startHr || 0}, '${b.stripeId || ''}', true, '${(b.customerName || 'this customer').replace(/'/g,'')}')">💸 Cancel & Refund</button>
               <button class="ab ab-ghost" onclick="deleteBooking('${b.dateKey}', ${b.startHr || 0}, '${b.stripeId || ''}', false, '${(b.customerName || 'this customer').replace(/'/g,'')}')">🗑 Remove Only</button>
             </div>
+            ${b.adjustments && b.adjustments.length ? `<div style="margin-top:0.75rem;padding:0.6rem 0.85rem;background:#111;border-left:3px solid #4caf50;font-size:0.78rem;color:#aaa">
+              <div style="color:#4caf50;font-weight:700;margin-bottom:0.3rem">➕ Adjustments (${b.adjustments.length})</div>
+              ${b.adjustments.map(a => `<div style="padding:0.2rem 0">+$${a.amount} — ${a.items || 'Added items'} <a href="${a.paymentLink}" target="_blank" style="color:#4caf50;text-decoration:none;font-weight:700">[Link]</a></div>`).join('')}
+            </div>` : ''}
           </div>
         </div>
       </div>`;
@@ -1002,6 +1050,90 @@
   window.openNewBookingModal = openNewBookingModal;
   window.closeNewBookingModal = closeNewBookingModal;
   window.submitNewBooking = submitNewBooking;
+
+  // ── Adjust booking ──
+  let adjBookingRef = { dateKey: '', startHr: 0, customer: '' };
+
+  function openAdjustModal(dateKey, startHr, customerName) {
+    adjBookingRef = { dateKey, startHr, customer: customerName };
+    document.getElementById('adj-customer').textContent = customerName;
+    document.getElementById('adj-items').value = '';
+    document.getElementById('adj-amount').value = '';
+    document.getElementById('adj-send-email').checked = false;
+    document.getElementById('adj-password').value = '';
+    document.getElementById('adj-result').style.display = 'none';
+    document.getElementById('adjust-job-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAdjustModal() {
+    document.getElementById('adjust-job-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  async function submitAdjustment() {
+    const items = document.getElementById('adj-items').value.trim();
+    const amount = parseFloat(document.getElementById('adj-amount').value);
+    const sendEmail = document.getElementById('adj-send-email').checked;
+    const password = document.getElementById('adj-password').value;
+
+    const banner = document.getElementById('adj-result');
+    banner.style.display = 'none';
+
+    if (!items || isNaN(amount) || amount <= 0 || !password) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Please fill in items, amount, and your password.';
+      return;
+    }
+
+    const btn = document.getElementById('adj-submit');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    try {
+      const res = await fetch('/.netlify/functions/admin-adjust-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          dateKey: adjBookingRef.dateKey,
+          startHr: adjBookingRef.startHr,
+          additionalItems: items,
+          additionalAmount: amount,
+          sendEmail
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        banner.className = 'result-banner success';
+        banner.style.display = 'block';
+        let html = `✅ Adjustment added. New total: $${data.newTotal}.`;
+        if (data.emailSent) html += ' Customer was emailed the payment link.';
+        if (data.paymentLink) {
+          html += `<a href="${data.paymentLink}" target="_blank" class="pay-link">📋 Open Payment Link</a>`;
+          html += `<button class="copy-btn" onclick="navigator.clipboard.writeText('${data.paymentLink}').then(()=>{this.textContent='Copied ✓'})">Copy Link</button>`;
+        }
+        banner.innerHTML = html;
+        loadBookings();
+      } else {
+        banner.className = 'result-banner error';
+        banner.style.display = 'block';
+        banner.textContent = '❌ ' + (data.error || 'Could not create adjustment.');
+      }
+    } catch(err) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '❌ Network error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create Payment Link';
+    }
+  }
+
+  window.openAdjustModal = openAdjustModal;
+  window.closeAdjustModal = closeAdjustModal;
+  window.submitAdjustment = submitAdjustment;
 
   // ── Delete booking (with optional refund) ──
   async function deleteBooking(dateKey, startHr, stripeId, refund, customerName) {
