@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /cancel.html
+Disallow: /confirmation-customer.html
+Disallow: /confirmation-owner.html
+Disallow: /.netlify/
+
+Sitemap: https://tnjunkrelief.com/sitemap.xml
