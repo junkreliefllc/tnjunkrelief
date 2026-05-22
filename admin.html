@@ -119,6 +119,47 @@
   .cal-legend-dot{width:10px;height:10px;border-radius:50%;background:var(--red)}
   .cal-legend-dot.today{background:var(--green)}
 
+  /* ── MANUAL BOOKING FORM ── */
+  .new-booking-btn{background:var(--red);color:#fff;border:none;font-family:'Barlow',sans-serif;font-weight:900;font-size:0.8rem;letter-spacing:1.5px;text-transform:uppercase;padding:0.85rem 1.4rem;cursor:pointer;transition:opacity 0.2s;margin-left:auto;display:inline-flex;align-items:center;gap:0.4rem}
+  .new-booking-btn:hover{opacity:0.85}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);z-index:300;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--gray);border:1px solid #222;border-top:4px solid var(--red);max-width:620px;width:100%;margin:auto 0;animation:modalIn 0.2s ease-out}
+  @keyframes modalIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-header{padding:1.2rem 1.5rem;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+  .modal-header h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:1.5px}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:0.2rem 0.5rem}
+  .modal-close:hover{color:var(--red)}
+  .modal-body{padding:1.5rem;max-height:70vh;overflow-y:auto}
+  .form-row{margin-bottom:1rem}
+  .form-row label{display:block;font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem}
+  .form-row input, .form-row textarea, .form-row select{width:100%;background:var(--mid);border:1px solid #333;color:var(--white);font-family:'Barlow',sans-serif;font-size:0.95rem;padding:0.7rem 0.9rem;outline:none;transition:border-color 0.2s}
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus{border-color:var(--red)}
+  .form-row textarea{resize:vertical;min-height:70px;font-family:'Barlow',sans-serif}
+  .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+  .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem}
+  .radio-group{display:flex;flex-direction:column;gap:0.5rem;background:#111;border:1px solid #222;padding:0.85rem 1rem}
+  .radio-group label{display:flex;align-items:flex-start;gap:0.6rem;color:#ccc;font-size:0.88rem;cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;margin:0;line-height:1.4}
+  .radio-group input[type="radio"]{margin-top:0.25rem;accent-color:var(--red)}
+  .radio-group label .hint{display:block;font-size:0.75rem;color:#666;font-weight:400;margin-top:0.15rem}
+  .checkbox-row{display:flex;align-items:center;gap:0.6rem;background:#111;border:1px solid #222;padding:0.85rem 1rem;cursor:pointer}
+  .checkbox-row input{accent-color:var(--red);width:18px;height:18px}
+  .checkbox-row label{margin:0;text-transform:none;letter-spacing:0;color:#ccc;font-size:0.9rem;font-weight:600;cursor:pointer}
+  .modal-footer{padding:1rem 1.5rem;border-top:1px solid #222;display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap}
+  .btn-modal{padding:0.85rem 1.4rem;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.8rem;letter-spacing:1.5px;text-transform:uppercase;border:none;cursor:pointer;transition:opacity 0.2s}
+  .btn-modal:hover{opacity:0.85}
+  .btn-cancel{background:transparent;border:1px solid #333;color:var(--muted)}
+  .btn-cancel:hover{border-color:var(--red);color:var(--white);opacity:1}
+  .btn-create{background:var(--red);color:#fff}
+  .form-section-heading{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:2.5px;color:var(--red);border-bottom:1px solid #222;padding-bottom:0.35rem;margin-top:1.3rem;margin-bottom:0.85rem}
+  .form-section-heading:first-child{margin-top:0}
+  .result-banner{padding:1rem;margin-bottom:1rem;font-size:0.9rem;line-height:1.5;display:none}
+  .result-banner.success{background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.4);color:#4caf50}
+  .result-banner.error{background:rgba(227,18,18,0.1);border:1px solid rgba(227,18,18,0.4);color:#E31212}
+  .result-banner .pay-link{display:block;margin-top:0.5rem;color:#fff;background:var(--red);padding:0.6rem 1rem;text-decoration:none;font-weight:800;font-size:0.78rem;letter-spacing:1px;text-transform:uppercase;text-align:center}
+  .copy-btn{display:inline-block;margin-left:0.5rem;background:#2a2a2a;border:1px solid #333;color:#aaa;padding:0.3rem 0.7rem;font-size:0.7rem;font-weight:700;cursor:pointer;letter-spacing:1px}
+  .copy-btn:hover{border-color:var(--red);color:var(--white)}
+
   @media(max-width:600px){
     #admin-content{padding:1.5rem 1rem}
     .detail-grid{grid-template-columns:1fr}
@@ -171,6 +212,7 @@
         <button class="cal-nav-btn" onclick="adminCalToday()" title="Jump to today" style="width:auto;padding:0 0.8rem;font-size:0.75rem;letter-spacing:1px;font-weight:700">TODAY</button>
         <button class="cal-nav-btn" onclick="adminCalNext()" title="Next month">›</button>
         <button class="cal-clear-filter" id="cal-clear" onclick="clearCalFilter()">✕ Clear Filter</button>
+        <button class="new-booking-btn" onclick="openNewBookingModal()">+ New Booking</button>
       </div>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
@@ -192,6 +234,133 @@
   <div id="bookings-container">
     <div class="loading"><div class="spinner"></div><br>Loading bookings...</div>
   </div>
+
+<!-- Manual Booking Modal -->
+<div class="modal-overlay" id="new-booking-modal" onclick="if(event.target===this)closeNewBookingModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>+ New Booking</h2>
+      <button class="modal-close" onclick="closeNewBookingModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="result-banner" id="nb-result"></div>
+
+      <div class="form-section-heading">Customer Info</div>
+      <div class="form-row">
+        <label>Customer Name *</label>
+        <input type="text" id="nb-name" placeholder="John Smith">
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Phone</label>
+          <input type="tel" id="nb-phone" placeholder="(931) 555-1234">
+        </div>
+        <div class="form-row">
+          <label>Email</label>
+          <input type="email" id="nb-email" placeholder="customer@example.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Address</label>
+        <input type="text" id="nb-address" placeholder="123 Main St, Clarksville TN 37040">
+      </div>
+
+      <div class="form-section-heading">Appointment</div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Date *</label>
+          <input type="date" id="nb-date">
+        </div>
+        <div class="form-row">
+          <label>Start Time *</label>
+          <select id="nb-start">
+            <option value="6">6:00 AM</option>
+            <option value="7">7:00 AM</option>
+            <option value="8" selected>8:00 AM</option>
+            <option value="9">9:00 AM</option>
+            <option value="10">10:00 AM</option>
+            <option value="11">11:00 AM</option>
+            <option value="12">12:00 PM</option>
+            <option value="13">1:00 PM</option>
+            <option value="14">2:00 PM</option>
+            <option value="15">3:00 PM</option>
+            <option value="16">4:00 PM</option>
+            <option value="17">5:00 PM</option>
+            <option value="18">6:00 PM</option>
+            <option value="19">7:00 PM</option>
+            <option value="20">8:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Duration (hours) *</label>
+        <select id="nb-duration">
+          <option value="1">1 hour</option>
+          <option value="2" selected>2 hours</option>
+          <option value="3">3 hours</option>
+          <option value="4">4 hours</option>
+          <option value="5">5 hours</option>
+          <option value="6">6 hours</option>
+          <option value="8">8 hours (full day)</option>
+        </select>
+      </div>
+
+      <div class="form-section-heading">Service Details</div>
+      <div class="form-row">
+        <label>Service Description</label>
+        <textarea id="nb-service" placeholder="e.g. Garage cleanout — sofa, washer, 10 bags of junk"></textarea>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Quoted Total ($)</label>
+          <input type="number" id="nb-total" placeholder="250" min="0" step="1">
+        </div>
+        <div class="form-row">
+          <label>Deposit Amount ($)</label>
+          <input type="number" id="nb-deposit" placeholder="50" min="0" step="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Internal Notes (not shown to customer)</label>
+        <textarea id="nb-notes" placeholder="e.g. Gate code 1234, big dog in yard, prefer text contact"></textarea>
+      </div>
+
+      <div class="form-section-heading">Payment</div>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="nb-payment" value="none" checked>
+          <div>💵 Cash on-site / Pay later
+            <span class="hint">Customer pays you in person on the job day. No payment link sent.</span>
+          </div>
+        </label>
+        <label>
+          <input type="radio" name="nb-payment" value="link">
+          <div>💳 Send Stripe payment link
+            <span class="hint">Generates a Stripe link to collect the deposit. Customer pays online before the job.</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-section-heading">Notifications</div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="nb-send-email">
+        <label for="nb-send-email">📧 Email customer the appointment confirmation</label>
+      </div>
+
+      <div class="form-section-heading">Confirm</div>
+      <div class="form-row">
+        <label>Your Admin Password *</label>
+        <input type="password" id="nb-password" placeholder="Required to save booking">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-cancel" onclick="closeNewBookingModal()">Cancel</button>
+      <button class="btn-modal btn-create" onclick="submitNewBooking()" id="nb-submit">Create Booking</button>
+    </div>
+  </div>
+</div>
 
   <div class="section-h" style="margin-top:2rem">Actions</div>
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
@@ -391,6 +560,124 @@
     const h = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
     return `${h}:00 ${suffix}`;
   }
+
+  // ── Manual booking modal ──
+  function openNewBookingModal() {
+    document.getElementById('new-booking-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // Pre-fill date with today
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('nb-date').value) {
+      document.getElementById('nb-date').value = today;
+    }
+    document.getElementById('nb-result').style.display = 'none';
+  }
+  function closeNewBookingModal() {
+    document.getElementById('new-booking-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  async function submitNewBooking() {
+    const name = document.getElementById('nb-name').value.trim();
+    const phone = document.getElementById('nb-phone').value.trim();
+    const email = document.getElementById('nb-email').value.trim();
+    const address = document.getElementById('nb-address').value.trim();
+    const date = document.getElementById('nb-date').value;
+    const startHr = parseInt(document.getElementById('nb-start').value);
+    const duration = parseInt(document.getElementById('nb-duration').value);
+    const service = document.getElementById('nb-service').value.trim();
+    const total = parseFloat(document.getElementById('nb-total').value) || 0;
+    const deposit = parseFloat(document.getElementById('nb-deposit').value) || 0;
+    const notes = document.getElementById('nb-notes').value.trim();
+    const paymentMode = document.querySelector('input[name="nb-payment"]:checked').value;
+    const sendEmail = document.getElementById('nb-send-email').checked;
+    const password = document.getElementById('nb-password').value;
+
+    const banner = document.getElementById('nb-result');
+    banner.className = 'result-banner';
+    banner.style.display = 'none';
+
+    if (!name || !date || isNaN(startHr) || !password) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Please fill in customer name, date, time, and your password.';
+      return;
+    }
+
+    if (paymentMode === 'link' && (!deposit || deposit <= 0)) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ To send a payment link, please enter a deposit amount greater than $0.';
+      return;
+    }
+
+    if (sendEmail && !email) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ To email the customer, please enter their email address.';
+      return;
+    }
+
+    const btn = document.getElementById('nb-submit');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    try {
+      const res = await fetch('/.netlify/functions/admin-create-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          customerName: name,
+          phone, email, address,
+          dateKey: date,
+          startHr,
+          endHr: startHr + duration,
+          total, deposit,
+          service, notes,
+          paymentMode,
+          sendEmail
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        banner.className = 'result-banner success';
+        banner.style.display = 'block';
+        let html = '✅ ' + (data.message || 'Booking created.');
+        if (data.emailSent) html += ' Customer confirmation email sent.';
+        if (data.paymentLink) {
+          html += `<a href="${data.paymentLink}" target="_blank" class="pay-link">📋 Copy & Send Payment Link →</a>`;
+          html += `<button class="copy-btn" onclick="navigator.clipboard.writeText('${data.paymentLink}').then(()=>{this.textContent='Copied ✓'})">Copy Link</button>`;
+        }
+        banner.innerHTML = html;
+
+        // Clear form fields (keep password for next booking)
+        ['nb-name','nb-phone','nb-email','nb-address','nb-service','nb-total','nb-deposit','nb-notes'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('nb-send-email').checked = false;
+
+        // Refresh bookings list
+        loadBookings();
+      } else {
+        banner.className = 'result-banner error';
+        banner.style.display = 'block';
+        banner.textContent = '❌ ' + (data.error || 'Could not create booking.');
+      }
+    } catch(err) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '❌ Network error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create Booking';
+    }
+  }
+
+  window.openNewBookingModal = openNewBookingModal;
+  window.closeNewBookingModal = closeNewBookingModal;
+  window.submitNewBooking = submitNewBooking;
 
   // ── Delete booking (with optional refund) ──
   async function deleteBooking(dateKey, startHr, stripeId, refund, customerName) {
