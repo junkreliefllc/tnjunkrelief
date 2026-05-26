@@ -324,6 +324,12 @@
     .data-row { flex-direction: column; gap: 0.2rem; }
     .data-val { text-align: left; }
   }
+
+  /* iOS zoom prevention on input focus + small-screen tweaks */
+  @media(max-width:768px){
+    input[type="text"],input[type="email"],input[type="tel"],input[type="number"],
+    input[type="password"],input[type="date"],input[type="search"],select,textarea{font-size:16px!important}
+  }
 </style>
 </head>
 <body>
