@@ -45,6 +45,12 @@
 
   .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.5rem}
   @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* iOS zoom prevention on input focus + small-screen tweaks */
+  @media(max-width:768px){
+    input[type="text"],input[type="email"],input[type="tel"],input[type="number"],
+    input[type="password"],input[type="date"],input[type="search"],select,textarea{font-size:16px!important}
+  }
 </style>
 </head>
 <body>
