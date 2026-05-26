@@ -211,14 +211,84 @@
   .live-quote .lq-total span:last-child{color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px}
   .live-quote.empty{color:#444;font-style:italic;text-align:center}
 
-  @media(max-width:600px){
-    #admin-content{padding:1.5rem 1rem}
-    .detail-grid{grid-template-columns:1fr}
+  @media(max-width:768px){
+    /* Header */
+    header{padding:0.85rem 1rem;flex-wrap:wrap;gap:0.5rem}
+    .logo{font-size:1.4rem}
+    .owner-badge{font-size:0.6rem;padding:0.25rem 0.6rem}
+    .logout-btn{font-size:0.7rem;padding:0.35rem 0.7rem}
+
+    /* Login */
+    #login-screen{margin:3rem auto;padding:0 1.25rem}
+    #login-screen h1{font-size:2rem}
+
+    /* Admin content */
+    #admin-content{padding:1.25rem 0.85rem}
+
+    /* Stats strip */
     .stats-strip{grid-template-columns:1fr 1fr}
-    .cal-cell{min-height:44px;padding:0.15rem}
-    .cal-cell-num{font-size:0.8rem}
+    .pstat{padding:0.85rem 0.5rem}
+    .pstat-val,.stat-val{font-size:1.3rem}
+    .pstat-label,.stat-label{font-size:0.6rem;letter-spacing:1.5px}
+
+    /* Calendar */
+    .cal-wrap{padding:0.85rem}
+    .cal-header{flex-direction:column;align-items:stretch;gap:0.75rem}
+    .cal-title{text-align:center;font-size:1.2rem}
+    .cal-nav{justify-content:center;flex-wrap:wrap}
+    .cal-nav-btn{width:32px;height:32px;font-size:0.9rem}
+    .new-booking-btn{margin-left:0!important;width:100%;justify-content:center;padding:0.75rem!important;font-size:0.78rem!important}
+    .cal-grid{gap:2px}
+    .cal-cell{min-height:42px;padding:0.15rem}
+    .cal-cell-num{font-size:0.78rem}
+    .cal-dow{font-size:0.58rem;padding:0.35rem 0}
     .cal-booking-dot{min-width:16px;height:16px;font-size:0.6rem;bottom:3px;right:3px}
-    .cal-wrap{padding:1rem}
+    .cal-legend{font-size:0.65rem;gap:0.75rem}
+
+    /* Filter tabs */
+    .filter-tabs{gap:0.4rem}
+    .ftab{font-size:0.68rem;padding:0.45rem 0.75rem}
+
+    /* Booking cards */
+    .booking-header{padding:0.85rem 1rem;gap:0.5rem}
+    .booking-date{font-size:0.95rem}
+    .booking-time{font-size:0.7rem;padding:0.15rem 0.5rem}
+    .booking-name{font-size:0.88rem}
+    .booking-badge{font-size:0.55rem;padding:0.2rem 0.5rem}
+    .detail-grid{grid-template-columns:1fr;gap:0.6rem}
+    .action-btns{gap:0.4rem}
+    .ab{font-size:0.7rem;padding:0.55rem 0.85rem}
+
+    /* Modal */
+    .modal-overlay{padding:0.85rem;align-items:flex-start}
+    .modal{max-width:100%}
+    .modal-header{padding:1rem 1.25rem}
+    .modal-header h2{font-size:1.3rem}
+    .modal-body{padding:1.25rem;max-height:65vh}
+    .modal-footer{padding:0.85rem 1.25rem;flex-direction:column-reverse;gap:0.5rem}
+    .modal-footer .btn-modal{width:100%}
+    .form-row label{font-size:0.65rem}
+    .form-grid-2,.form-grid-3{grid-template-columns:1fr;gap:0.5rem}
+    .mode-tabs{grid-template-columns:1fr;gap:3px}
+    .mode-tab{padding:0.6rem;font-size:0.7rem}
+    .opt-grid{grid-template-columns:1fr 1fr}
+    .item-list-scroll{max-height:240px}
+    .item-row{padding:0.45rem 0.5rem;gap:0.4rem}
+    .item-name{font-size:0.82rem}
+    .item-price{font-size:0.7rem}
+    .qty-btn{width:24px;height:24px;font-size:0.85rem}
+  }
+
+  /* Extra small phones */
+  @media(max-width:380px){
+    .stats-strip{grid-template-columns:1fr 1fr}
+    .opt-grid{grid-template-columns:1fr}
+  }
+
+  /* iOS zoom prevention */
+  @media(max-width:768px){
+    input[type="text"],input[type="email"],input[type="tel"],input[type="number"],
+    input[type="password"],input[type="date"],select,textarea{font-size:16px!important}
   }
 </style>
 </head>
