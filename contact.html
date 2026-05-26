@@ -60,7 +60,7 @@
     display: flex; justify-content: space-between; align-items: center;
     padding: 1.2rem 2.5rem;
     background: rgba(10,10,10,0.95); backdrop-filter: blur(8px);
-    border-bottom: 2px solid var(--yellow);
+    border-bottom: 2px solid var(--red);
   }
   .logo {
     font-family: 'Bebas Neue', sans-serif;
@@ -75,9 +75,9 @@
     letter-spacing: 1.5px; text-transform: uppercase;
     transition: color 0.2s;
   }
-  .nav-links a:hover { color: var(--yellow); }
+  .nav-links a:hover { color: var(--red); }
   .nav-cta {
-    background: var(--yellow); color: var(--black) !important;
+    background: var(--red); color: #fff !important;
     padding: 0.65rem 1.4rem; font-weight: 800;
     transition: opacity 0.2s;
   }
@@ -91,8 +91,8 @@
   .mobile-menu { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.98); z-index: 199; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem; }
   .mobile-menu.open { display: flex; }
   .mobile-menu a { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; color: var(--white); text-decoration: none; }
-  .mobile-menu a:hover { color: var(--yellow); }
-  .mobile-menu .nav-cta { background: var(--yellow); color: var(--black) !important; padding: 0.75rem 2rem; font-size: 2rem; }
+  .mobile-menu a:hover { color: var(--red); }
+  .mobile-menu .nav-cta { background: var(--red); color: #fff !important; padding: 0.75rem 2rem; font-size: 2rem; }
 
   @media(max-width: 768px){
     .nav-links { display: none; }
@@ -153,7 +153,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 1rem;
-    margin-bottom: 4rem;
+    margin-bottom: 1rem;
   }
   .contact-card {
     background: var(--gray);
@@ -168,7 +168,6 @@
   }
   .contact-card:hover {
     transform: translateY(-3px);
-    border-top-color: var(--yellow);
   }
   .contact-card .icon {
     font-size: 2.5rem;
@@ -207,6 +206,17 @@
     transform: translateX(4px);
   }
 
+  /* ── BOOK ONLINE CENTERED CARD ── */
+  .book-online-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4rem;
+    margin-top: 1rem;
+  }
+  .book-online-card {
+    max-width: 360px;
+    width: 100%;
+  }
   /* ── INFO BLOCKS ── */
   .info-grid {
     display: grid;
@@ -359,7 +369,7 @@
   footer {
     position: relative; z-index: 10;
     background: rgba(10,10,10,0.95);
-    border-top: 2px solid var(--yellow);
+    border-top: 2px solid var(--red);
     padding: 2.5rem 2rem;
     text-align: center;
   }
@@ -373,7 +383,7 @@
     text-decoration: none;
     font-weight: 700;
   }
-  footer a:hover { color: var(--yellow); }
+  footer a:hover { color: var(--red); opacity: 0.85; }
 
   .spinner {
     display: inline-block;
@@ -421,7 +431,7 @@
 
 <main>
 
-  <!-- Contact methods -->
+  <!-- Contact methods: top row of 3 -->
   <div class="contact-grid">
     <a href="tel:9315610431" class="contact-card">
       <span class="icon">📞</span>
@@ -446,8 +456,11 @@
       <div class="sub">For detailed quotes, estate cleanouts, or business inquiries.</div>
       <span class="arrow">→</span>
     </a>
+  </div>
 
-    <a href="/#booking" class="contact-card">
+  <!-- Book Online centered below -->
+  <div class="book-online-wrap">
+    <a href="/#booking" class="contact-card book-online-card">
       <span class="icon">📅</span>
       <h3>Book Online</h3>
       <div class="detail">Self-Service</div>
@@ -460,13 +473,13 @@
   <div class="info-grid">
     <div class="info-block">
       <h2>📅 Business Hours</h2>
-      <div class="info-row"><span class="label">Monday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Sunday</span><span class="val closed">Closed</span></div>
+      <div class="info-row"><span class="label">Monday</span><span class="val closed">Closed</span></div>
       <div class="info-row"><span class="label">Tuesday</span><span class="val">8:00 AM – 6:00 PM</span></div>
       <div class="info-row"><span class="label">Wednesday</span><span class="val">8:00 AM – 6:00 PM</span></div>
       <div class="info-row"><span class="label">Thursday</span><span class="val">8:00 AM – 6:00 PM</span></div>
       <div class="info-row"><span class="label">Friday</span><span class="val">8:00 AM – 6:00 PM</span></div>
-      <div class="info-row"><span class="label">Saturday</span><span class="val">8:00 AM – 6:00 PM</span></div>
-      <div class="info-row"><span class="label">Sunday</span><span class="val closed">Closed</span></div>
+      <div class="info-row"><span class="label">Saturday</span><span class="val closed">Closed</span></div>
       <div style="margin-top:0.85rem;font-size:0.8rem;color:#666;line-height:1.5">After-hours emergencies? Text us — we'll respond as soon as we can.</div>
     </div>
 
