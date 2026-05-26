@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Contact Junk Relief LLC — Clarksville TN Junk Removal | (931) 561-0431</title>
+<meta name="description" content="Get in touch with Junk Relief LLC for fast, affordable junk removal in Clarksville TN. Call (931) 561-0431, text us, or send a message. Same-day service available.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tnjunkrelief.com/contact">
+<meta name="theme-color" content="#E31212">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --black: #0a0a0a;
+    --red: #E31212;
+    --red-dark: #c41010;
+    --white: #f5f5f0;
+    --gray: #1a1a1a;
+    --mid: #2a2a2a;
+    --muted: #888;
+    --green: #4caf50;
+    --yellow: #FFCC00;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Diagonal stripe background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 60px,
+      rgba(227,18,18,0.025) 60px,
+      rgba(227,18,18,0.025) 61px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 2.5rem;
+    background: rgba(10,10,10,0.95); backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--yellow);
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem; letter-spacing: 2px;
+    text-decoration: none; color: var(--white);
+  }
+  .logo span { color: var(--red); }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    color: var(--white); text-decoration: none;
+    font-weight: 700; font-size: 0.85rem;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--yellow); }
+  .nav-cta {
+    background: var(--yellow); color: var(--black) !important;
+    padding: 0.65rem 1.4rem; font-weight: 800;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.98); z-index: 199; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; color: var(--white); text-decoration: none; }
+  .mobile-menu a:hover { color: var(--yellow); }
+  .mobile-menu .nav-cta { background: var(--yellow); color: var(--black) !important; padding: 0.75rem 2rem; font-size: 2rem; }
+
+  @media(max-width: 768px){
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    nav { padding: 1rem 1.5rem; }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 10;
+    padding: 9rem 2rem 4rem;
+    text-align: center;
+    border-bottom: 1px solid #222;
+  }
+  .hero::before {
+    content: '📞';
+    position: absolute;
+    font-size: 18rem;
+    color: rgba(227,18,18,0.04);
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%) rotate(15deg);
+    pointer-events: none;
+    line-height: 1;
+  }
+  .hero .tag {
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 4px;
+    color: var(--red); text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 9vw, 6.5rem);
+    letter-spacing: 2px;
+    line-height: 0.95;
+    color: var(--white);
+  }
+  .hero h1 span { color: var(--red); }
+  .hero p {
+    margin-top: 1.2rem;
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 580px;
+    margin-left: auto; margin-right: auto;
+    line-height: 1.7;
+  }
+
+  /* ── MAIN ── */
+  main {
+    position: relative; z-index: 10;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 2rem 5rem;
+  }
+
+  /* ── CONTACT METHOD GRID ── */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 4rem;
+  }
+  .contact-card {
+    background: var(--gray);
+    border: 1px solid #222;
+    border-top: 3px solid var(--red);
+    padding: 2rem 1.75rem;
+    text-decoration: none;
+    color: var(--white);
+    transition: transform 0.15s, border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-card:hover {
+    transform: translateY(-3px);
+    border-top-color: var(--yellow);
+  }
+  .contact-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .contact-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.3rem;
+    color: var(--white);
+  }
+  .contact-card .detail {
+    color: var(--red);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+    word-break: break-all;
+  }
+  .contact-card .sub {
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .contact-card .arrow {
+    position: absolute;
+    bottom: 1rem; right: 1.25rem;
+    color: var(--red);
+    font-size: 1.4rem;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .contact-card:hover .arrow {
+    opacity: 1;
+    transform: translateX(4px);
+  }
+
+  /* ── INFO BLOCKS ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 4rem;
+  }
+  @media (max-width: 768px) {
+    .info-grid { grid-template-columns: 1fr; }
+  }
+  .info-block {
+    background: var(--gray);
+    border: 1px solid #222;
+    padding: 1.8rem 1.75rem;
+  }
+  .info-block h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 1.5px;
+    color: var(--red);
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid #222;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #1e1e1e;
+    font-size: 0.92rem;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label {
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .info-row .val {
+    color: var(--white);
+    font-weight: 700;
+  }
+  .info-row .val.closed { color: #555; }
+  .info-block .full-row {
+    padding: 0.55rem 0;
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .area-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+  }
+  .area-chip {
+    background: var(--mid);
+    border: 1px solid #333;
+    color: #ccc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 0.4rem 0.85rem;
+  }
+
+  /* ── CONTACT FORM ── */
+  .form-section {
+    background: var(--gray);
+    border: 1px solid #222;
+    border-top: 3px solid var(--red);
+    padding: 2.2rem 2rem;
+    margin-bottom: 3rem;
+  }
+  .form-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.4rem;
+  }
+  .form-section .form-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 1.6rem;
+    line-height: 1.6;
+  }
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  @media (max-width: 600px) {
+    .form-grid-2 { grid-template-columns: 1fr; }
+  }
+  .form-row { margin-bottom: 0.85rem; }
+  .form-row label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .form-row input, .form-row textarea, .form-row select {
+    width: 100%;
+    background: var(--mid);
+    border: 1px solid #333;
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+    border-color: var(--red);
+  }
+  .form-row textarea {
+    resize: vertical;
+    min-height: 110px;
+  }
+  .form-btn {
+    width: 100%;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 1.1rem;
+    cursor: pointer;
+    margin-top: 0.4rem;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .form-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .form-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .form-result {
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    display: none;
+  }
+  .form-result.success { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.4); color: var(--green); }
+  .form-result.error { background: rgba(227,18,18,0.1); border: 1px solid rgba(227,18,18,0.4); color: var(--red); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 10;
+    background: rgba(10,10,10,0.95);
+    border-top: 2px solid var(--yellow);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  footer p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+  footer a {
+    color: var(--red);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  footer a:hover { color: var(--yellow); }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Junk <span>Relief</span></a>
+  <div class="nav-links">
+    <a href="/#services">Services</a>
+    <a href="/#how">How It Works</a>
+    <a href="/#booking">Pricing</a>
+    <a href="/contact">Contact</a>
+    <a href="/#booking" class="nav-cta">Book Now</a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="/#services" onclick="closeMobileMenu()">Services</a>
+  <a href="/#how" onclick="closeMobileMenu()">How It Works</a>
+  <a href="/#booking" onclick="closeMobileMenu()">Pricing</a>
+  <a href="/contact" onclick="closeMobileMenu()">Contact</a>
+  <a href="tel:9315610431" onclick="closeMobileMenu()">📞 Call Us</a>
+  <a href="/#booking" class="nav-cta" onclick="closeMobileMenu()">Book Now</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="tag">Get In Touch</div>
+  <h1>Let's Talk <span>Junk</span></h1>
+  <p>Call, text, or send us a message. We typically respond within an hour during business hours — and same-day service is almost always available.</p>
+</section>
+
+<main>
+
+  <!-- Contact methods -->
+  <div class="contact-grid">
+    <a href="tel:9315610431" class="contact-card">
+      <span class="icon">📞</span>
+      <h3>Call Us</h3>
+      <div class="detail">(931) 561-0431</div>
+      <div class="sub">Fastest way to get a quote or book same-day service.</div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="sms:9315610431" class="contact-card">
+      <span class="icon">💬</span>
+      <h3>Text Us</h3>
+      <div class="detail">(931) 561-0431</div>
+      <div class="sub">Send a photo of your junk and we'll get back with a quote.</div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="mailto:junkreliefllc@gmail.com" class="contact-card">
+      <span class="icon">✉️</span>
+      <h3>Email Us</h3>
+      <div class="detail">junkreliefllc@gmail.com</div>
+      <div class="sub">For detailed quotes, estate cleanouts, or business inquiries.</div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="/#booking" class="contact-card">
+      <span class="icon">📅</span>
+      <h3>Book Online</h3>
+      <div class="detail">Self-Service</div>
+      <div class="sub">Pick your items, date, and time — pay deposit in 60 seconds.</div>
+      <span class="arrow">→</span>
+    </a>
+  </div>
+
+  <!-- Info Grid: Hours + Service Area -->
+  <div class="info-grid">
+    <div class="info-block">
+      <h2>📅 Business Hours</h2>
+      <div class="info-row"><span class="label">Monday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Tuesday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Wednesday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Thursday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Friday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Saturday</span><span class="val">8:00 AM – 6:00 PM</span></div>
+      <div class="info-row"><span class="label">Sunday</span><span class="val closed">Closed</span></div>
+      <div style="margin-top:0.85rem;font-size:0.8rem;color:#666;line-height:1.5">After-hours emergencies? Text us — we'll respond as soon as we can.</div>
+    </div>
+
+    <div class="info-block">
+      <h2>📍 Service Area</h2>
+      <p class="full-row">We proudly serve Clarksville, Tennessee and surrounding communities. Outside this area? Give us a call — we may still be able to help.</p>
+      <div class="area-list">
+        <span class="area-chip">Clarksville</span>
+        <span class="area-chip">Fort Campbell</span>
+        <span class="area-chip">Oak Grove</span>
+        <span class="area-chip">Hopkinsville</span>
+        <span class="area-chip">Springfield</span>
+        <span class="area-chip">Adams</span>
+        <span class="area-chip">Cunningham</span>
+        <span class="area-chip">Woodlawn</span>
+        <span class="area-chip">Palmyra</span>
+      </div>
+      <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #1e1e1e;color:#888;font-size:0.85rem;line-height:1.6">
+        <strong style="color:#f5f5f0">Licensed & Insured</strong> · Locally Owned · Veteran-Friendly
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Form -->
+  <div class="form-section">
+    <h2>Send Us a Message</h2>
+    <p class="form-sub">Not ready to book yet? Tell us about your job and we'll get back to you with a custom quote — usually within an hour during business hours.</p>
+
+    <form id="contact-form" onsubmit="submitContact(event)">
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label for="cf-name">Your Name *</label>
+          <input type="text" id="cf-name" required>
+        </div>
+        <div class="form-row">
+          <label for="cf-phone">Phone</label>
+          <input type="tel" id="cf-phone" placeholder="(931) 555-1234">
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="cf-email">Email *</label>
+        <input type="email" id="cf-email" required>
+      </div>
+      <div class="form-row">
+        <label for="cf-subject">What's this about?</label>
+        <select id="cf-subject">
+          <option value="quote">Get a quote</option>
+          <option value="estate">Estate cleanout</option>
+          <option value="commercial">Business / commercial</option>
+          <option value="recurring">Recurring service</option>
+          <option value="question">General question</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="cf-message">Tell us about your job *</label>
+        <textarea id="cf-message" required placeholder="e.g. I need to clean out my garage — about a couch, washer, and some old yard equipment. What would that cost?"></textarea>
+      </div>
+      <button type="submit" class="form-btn" id="cf-submit">Send Message →</button>
+      <div class="form-result" id="cf-result"></div>
+    </form>
+  </div>
+
+</main>
+
+<footer>
+  <p>Clarksville's Junk Removal Crew &nbsp;|&nbsp; <a href="tel:9315610431">(931) 561-0431</a> &nbsp;|&nbsp; <a href="mailto:junkreliefllc@gmail.com">junkreliefllc@gmail.com</a></p>
+  <p style="margin-top:0.8rem;font-size:0.78rem;color:#444">© 2026 Junk Relief LLC. All rights reserved.</p>
+</footer>
+
+<script>
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const btn = document.getElementById('hamburger');
+    menu.classList.toggle('open');
+    btn.classList.toggle('open');
+    document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+  }
+  function closeMobileMenu() {
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  async function submitContact(e) {
+    e.preventDefault();
+    const name = document.getElementById('cf-name').value.trim();
+    const phone = document.getElementById('cf-phone').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const subject = document.getElementById('cf-subject').value;
+    const message = document.getElementById('cf-message').value.trim();
+
+    const btn = document.getElementById('cf-submit');
+    const result = document.getElementById('cf-result');
+    result.style.display = 'none';
+
+    if (!name || !email || !message) {
+      result.className = 'form-result error';
+      result.style.display = 'block';
+      result.textContent = 'Please fill in your name, email, and message.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Sending...';
+
+    try {
+      const res = await fetch('/.netlify/functions/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email, subject, message })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        result.className = 'form-result success';
+        result.style.display = 'block';
+        result.innerHTML = '✅ Message sent! We\\'ll get back to you within an hour during business hours.';
+        document.getElementById('contact-form').reset();
+      } else {
+        result.className = 'form-result error';
+        result.style.display = 'block';
+        result.innerHTML = '❌ Could not send message. Please call us at <a href="tel:9315610431" style="color:#E31212">(931) 561-0431</a> or email us directly.';
+      }
+    } catch(err) {
+      result.className = 'form-result error';
+      result.style.display = 'block';
+      result.innerHTML = '❌ Network error. Please call us at <a href="tel:9315610431" style="color:#E31212">(931) 561-0431</a>.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Send Message →';
+    }
+  }
+</script>
+</body>
+</html>
