@@ -114,16 +114,16 @@
 
   /* NAV */
   nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.2rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(8px);border-bottom:2px solid var(--yellow)}
-  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none;position:relative;z-index:301}
   .hamburger span{display:block;width:24px;height:2px;background:var(--white);transition:all 0.3s}
   .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .hamburger.open span:nth-child(2){opacity:0}
   .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-  .mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,10,0.98);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem}
+  .mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,10,0.98);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:2rem;padding:5rem 2rem 2rem;overflow-y:auto}
   .mobile-menu.open{display:flex}
-  .mobile-menu a{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:3px;color:var(--white);text-decoration:none;transition:color 0.2s}
+  .mobile-menu a{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;color:var(--white);text-decoration:none;transition:color 0.2s;padding:0.5rem 1rem}
   .mobile-menu a:hover{color:var(--yellow)}
-  .mobile-menu .nav-cta{background:var(--yellow);color:var(--black)!important;padding:0.75rem 2rem;font-size:2rem}
+  .mobile-menu .nav-cta{background:var(--red);color:#fff!important;padding:0.75rem 2rem;font-size:1.8rem}
   @media(max-width:768px){
     .nav-links{display:none}
     .hamburger{display:flex}
@@ -295,11 +295,122 @@
   .fade-in.visible{opacity:1;transform:translateY(0)}
 
   @media(max-width:768px){
+    /* Nav */
     .nav-links{display:none}
+    nav{padding:0.85rem 1.25rem}
+    .logo{font-size:1.5rem}
+
+    /* Hero */
+    .hero{padding:7rem 1.25rem 3rem}
+    .hero h1{font-size:clamp(2.5rem,11vw,4rem);line-height:0.95}
+    .hero p{font-size:0.95rem;padding:0 0.5rem}
     .hero-number{display:none}
-    .pricing-toggle{grid-template-columns:1fr}
-    .cf-row{grid-template-columns:1fr}
-    .contact-chips{flex-direction:column}
+    .hero-cta-row{flex-direction:column;gap:0.5rem;width:100%}
+    .hero-cta-row .btn-primary,
+    .hero-cta-row .btn-secondary{width:100%;justify-content:center}
+
+    /* Sections */
+    section{padding:3rem 1.25rem}
+    .section-title, h2{font-size:clamp(2rem,7vw,2.5rem)!important}
+
+    /* Booking wizard - main improvements */
+    #booking{padding:2.5rem 0.85rem}
+    .wizard-panel{padding:1.25rem!important}
+    .pricing-toggle{grid-template-columns:1fr;gap:0.5rem}
+    .mode-btn{padding:0.85rem!important;font-size:0.85rem!important}
+
+    /* Item picker */
+    .item-grid{grid-template-columns:1fr 1fr!important;gap:0.5rem!important}
+    .item-card{padding:0.75rem 0.5rem!important;font-size:0.78rem!important}
+    .item-card .item-name{font-size:0.78rem!important;line-height:1.25!important}
+    .item-card .item-price{font-size:0.7rem!important}
+    .qty-controls{gap:4px!important}
+    .qty-btn{width:24px!important;height:24px!important;font-size:0.85rem!important}
+    .qty-display{min-width:22px!important;font-size:0.85rem!important}
+    .cat-tab{font-size:0.7rem!important;padding:0.45rem 0.7rem!important;letter-spacing:1px!important}
+    #item-search{font-size:16px!important;padding:0.75rem 0.85rem!important}
+    .popular-hint, #popular-hint{font-size:0.78rem!important;padding:0.6rem 0.85rem!important}
+
+    /* Load cards */
+    .load-cards{grid-template-columns:1fr 1fr!important;gap:0.6rem!important}
+    .load-card{padding:1rem 0.5rem!important}
+    .load-card .load-name{font-size:0.95rem!important}
+    .load-card .load-price{font-size:1.4rem!important}
+
+    /* Hourly */
+    .labor-grid{grid-template-columns:1fr!important;gap:0.6rem!important}
+
+    /* Price preview */
+    .price-line{font-size:0.85rem!important}
+    .price-total-line{padding:0.85rem 0!important}
+    .price-total-amt{font-size:1.8rem!important}
+
+    /* Calendar */
+    .calendar{padding:0.85rem!important}
+    .cal-cell{font-size:0.85rem!important;padding:0.4rem 0!important}
+    .cal-month-label{font-size:1.1rem!important}
+    .cal-nav-btn{width:30px!important;height:30px!important;font-size:0.95rem!important}
+
+    /* Time slots */
+    .time-slots{grid-template-columns:1fr 1fr!important;gap:0.5rem!important}
+    .time-slot{font-size:0.82rem!important;padding:0.7rem 0.4rem!important}
+
+    /* Customer info form */
+    .cf-row{grid-template-columns:1fr;gap:0.85rem}
+    .cf-row input,
+    .cf-row textarea{font-size:16px;padding:0.85rem 1rem}
+
+    /* Stripe payment fields */
+    #card-element,
+    #card-expiry,
+    #card-cvc,
+    .StripeElement{font-size:16px!important;padding:0.85rem!important}
+
+    /* Step nav */
+    .step-nav{flex-direction:column-reverse;gap:0.5rem}
+    .step-nav button,
+    .step-nav a{width:100%;justify-content:center}
+
+    /* Step progress bar */
+    .progress-bar{padding:0 0.5rem}
+    .progress-step{font-size:0.7rem!important}
+    .progress-step .step-num{width:30px!important;height:30px!important;font-size:0.85rem!important}
+
+    /* Services */
+    .services-grid{grid-template-columns:1fr!important}
+    .service-card{padding:1.5rem!important}
+
+    /* How it works */
+    .how-grid{grid-template-columns:1fr!important;gap:1rem!important}
+
+    /* Contact chips */
+    .contact-chips{flex-direction:column;width:100%}
+    .contact-chips a{width:100%;justify-content:center}
+
+    /* Footer */
+    footer{padding:2rem 1.25rem;font-size:0.85rem}
+    footer p{line-height:1.7}
+  }
+
+  /* Extra small phones */
+  @media(max-width:380px){
+    .hero h1{font-size:2.2rem}
+    .item-grid{grid-template-columns:1fr!important}
+    .load-cards{grid-template-columns:1fr!important}
+    .time-slots{grid-template-columns:1fr!important}
+  }
+
+  /* Prevent iOS zoom on input focus (font-size must be 16px+ on inputs) */
+  @media(max-width:768px){
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="password"],
+    input[type="search"],
+    input[type="date"],
+    select,
+    textarea{font-size:16px!important}
   }
 </style>
 </head>
