@@ -88,11 +88,11 @@
   .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .hamburger.open span:nth-child(2) { opacity: 0; }
   .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-  .mobile-menu { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.98); z-index: 199; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem; }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.98); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; padding: 5rem 2rem 2rem; overflow-y: auto; }
   .mobile-menu.open { display: flex; }
-  .mobile-menu a { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 3px; color: var(--white); text-decoration: none; }
+  .mobile-menu a { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 3px; color: var(--white); text-decoration: none; padding: 0.5rem 1rem; }
   .mobile-menu a:hover { color: var(--red); }
-  .mobile-menu .nav-cta { background: var(--red); color: #fff !important; padding: 0.75rem 2rem; font-size: 2rem; }
+  .mobile-menu .nav-cta { background: var(--red); color: #fff !important; padding: 0.75rem 2rem; font-size: 1.8rem; }
 
   @media(max-width: 768px){
     .nav-links { display: none; }
@@ -396,6 +396,12 @@
     margin-right: 0.5rem;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* iOS zoom prevention on input focus + small-screen tweaks */
+  @media(max-width:768px){
+    input[type="text"],input[type="email"],input[type="tel"],input[type="number"],
+    input[type="password"],input[type="date"],input[type="search"],select,textarea{font-size:16px!important}
+  }
 </style>
 </head>
 <body>
