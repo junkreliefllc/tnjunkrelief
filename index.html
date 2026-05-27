@@ -320,17 +320,23 @@
     .logo{font-size:1.5rem}
 
     /* Hero */
-    .hero{padding:7rem 1.25rem 3rem}
-    .hero h1{font-size:clamp(2.5rem,11vw,4rem);line-height:0.95}
-    .hero p{font-size:0.95rem;padding:0 0.5rem}
+    .hero{padding:5rem 1.25rem 2.5rem;text-align:center;align-items:center}
+    .hero-tag{margin-left:auto;margin-right:auto}
+    .hero h1{font-size:clamp(2.5rem,11vw,4rem);line-height:0.95;margin-left:auto;margin-right:auto}
+    .hero p, .hero-sub{font-size:0.95rem;padding:0 0.5rem;margin-left:auto!important;margin-right:auto!important}
     .hero-number{display:none}
-    .hero-cta-row{flex-direction:column;gap:0.5rem;width:100%}
+    .hero-actions{justify-content:center;width:100%}
+    .hero-cta-row{flex-direction:column;gap:0.5rem;width:100%;align-items:center}
     .hero-cta-row .btn-primary,
     .hero-cta-row .btn-secondary{width:100%;justify-content:center}
+    /* Hero logo image (the big one inside the hero) */
+    .hero img{margin-left:auto;margin-right:auto;display:block}
 
     /* Sections */
     section{padding:3rem 1.25rem}
     .section-title, h2{font-size:clamp(2rem,7vw,2.5rem)!important}
+    .section-label{text-align:center}
+    .section h2, section h2{text-align:center}
 
     /* Booking wizard - main improvements */
     #booking{padding:2.5rem 1.25rem}
@@ -399,9 +405,19 @@
     .progress-step{font-size:0.7rem!important}
     .progress-step .step-num{width:30px!important;height:30px!important;font-size:0.85rem!important}
 
-    /* Services */
+    /* Services - emoji inline with title, all centered */
     .services-grid{grid-template-columns:1fr!important}
-    .service-card{padding:1.5rem!important}
+    .service-card{padding:1.5rem!important;text-align:center}
+    .service-card .service-icon{display:inline-block;font-size:1.4rem!important;margin-bottom:0!important;margin-right:0.4rem;vertical-align:middle;line-height:1}
+    .service-card h3{display:inline-block;vertical-align:middle;margin-bottom:0!important;font-size:1.35rem!important;letter-spacing:0.5px!important}
+    .service-card p{margin-top:0.75rem;text-align:center}
+
+    /* Trust bar - 2-col grid on mobile, compact */
+    .trust-bar{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0.6rem 0.8rem!important;padding:1rem 1.25rem!important;justify-items:center}
+    .trust-bar span{font-size:0.7rem!important;letter-spacing:1px!important;white-space:normal!important;text-align:center;line-height:1.2}
+    .trust-bar .dot{display:none}
+    /* Make the last (5th) item span both columns */
+    .trust-bar span:last-child{grid-column:1 / -1}
 
     /* How it works */
     .how-grid{grid-template-columns:1fr!important;gap:1rem!important}
