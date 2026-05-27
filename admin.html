@@ -951,23 +951,34 @@
   }
   window.adjustAdminHours = adjustAdminHours;
 
+  const ADMIN_MINIMUM = 95;
+  const ADMIN_TRANSFER = 55;
+
   function getAdminQuote() {
     if (adminMode === 'items') {
       const picks = ADMIN_CATALOG.filter(i => adminQtys[i.id] > 0);
       if (picks.length === 0) return null;
-      const total = Math.max(35, picks.reduce((s,i) => s + i.price * adminQtys[i.id], 0));
+      const subtotal = picks.reduce((s,i) => s + i.price * adminQtys[i.id], 0);
+      let total, note;
+      if (subtotal >= ADMIN_MINIMUM) {
+        total = subtotal + ADMIN_TRANSFER;
+        note = `+ $${ADMIN_TRANSFER} transfer fee`;
+      } else {
+        total = ADMIN_MINIMUM;
+        note = `($${ADMIN_MINIMUM} minimum applies)`;
+      }
       const lines = picks.map(i => `${adminQtys[i.id]}× ${i.label}`).join(', ');
-      return { total, lines, summary: lines };
+      return { total, subtotal, lines, note, summary: lines };
     } else if (adminMode === 'load') {
       if (!adminLoadKey) return null;
       const L = ADMIN_LOAD[adminLoadKey];
-      return { total: L.price || 0, lines: L.label, summary: L.label };
+      return { total: L.price || 0, subtotal: L.price || 0, lines: L.label, note: '', summary: L.label };
     } else if (adminMode === 'labor') {
       if (!adminCrew) return null;
       const rate = ADMIN_CREW_RATES[adminCrew];
       const total = rate * adminHours;
       const lines = `${adminCrew} Man Crew @ $${rate}/hr × ${adminHours} hrs`;
-      return { total, lines, summary: lines };
+      return { total, subtotal: total, lines, note: '', summary: lines };
     }
     return null;
   }
@@ -979,7 +990,8 @@
     const deposit = Math.ceil(q.total * 0.25);
     box.className = 'live-quote';
     box.innerHTML = `
-      <div class="lq-line"><span>${q.lines.length > 60 ? q.lines.substr(0,60) + '...' : q.lines}</span><span><strong>$${q.total}</strong></span></div>
+      <div class="lq-line"><span>${q.lines.length > 60 ? q.lines.substr(0,60) + '...' : q.lines}</span><span><strong>$${q.subtotal || q.total}</strong></span></div>
+      ${q.note ? `<div class="lq-line" style="color:#888;font-size:0.78rem"><span>${q.note}</span><span></span></div>` : ''}
       <div class="lq-line"><span>Suggested Deposit (25%)</span><span>$${deposit}</span></div>
       <div class="lq-total"><span>Estimated Total</span><span>$${q.total}</span></div>`;
   }
