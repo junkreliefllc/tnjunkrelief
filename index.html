@@ -203,8 +203,8 @@
   .toggle-btn.selected small{color:#c41010}
 
   /* Item picker */
-  .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;margin-bottom:1.5rem}
-  .item-card{background:var(--gray);border:2px solid #2a2a2a;padding:1rem 1.2rem;cursor:pointer;transition:all 0.2s;display:flex;justify-content:space-between;align-items:center;user-select:none}
+  .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:0.75rem;margin-bottom:1.5rem}
+  .item-card{background:var(--gray);border:2px solid #2a2a2a;padding:1rem 1.2rem;cursor:pointer;transition:all 0.2s;display:flex;justify-content:space-between;align-items:center;user-select:none;gap:0.75rem;min-width:0}
   .item-card:hover{border-color:#444}
   .item-card.selected{border-color:var(--yellow);background:rgba(227,18,18,0.06)}
   .item-card-left{display:flex;flex-direction:column}
@@ -338,18 +338,18 @@
     .pricing-toggle{grid-template-columns:1fr!important;gap:0.5rem!important}
     .mode-btn{padding:0.85rem!important;font-size:0.85rem!important}
 
-    /* Item picker */
-    .item-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:0.6rem!important;width:100%}
-    .item-card{padding:0.6rem 0.45rem!important;font-size:0.75rem!important;min-width:0!important;overflow:hidden;gap:0.35rem!important}
-    .item-card > div:first-child{min-width:0!important;flex:1 1 auto!important;gap:0.4rem!important}
-    .item-card .item-name{font-size:0.75rem!important;line-height:1.2!important;hyphens:auto}
-    .item-card .item-price{font-size:0.68rem!important}
-    .item-card img{width:28px!important;height:28px!important;flex-shrink:0}
-    .item-qty{gap:0.2rem!important;flex-shrink:0!important}
-    .qty-controls{gap:3px!important}
-    .qty-btn{width:22px!important;height:22px!important;font-size:0.85rem!important}
-    .qty-num{font-size:0.85rem!important;min-width:14px!important}
-    .qty-display{min-width:22px!important;font-size:0.85rem!important}
+    /* Item picker - single column on mobile, horizontal layout per card */
+    .item-grid{grid-template-columns:1fr!important;gap:0.5rem!important;width:100%}
+    .item-card{padding:0.75rem 0.85rem!important;font-size:0.9rem!important;min-width:0!important;gap:0.75rem!important}
+    .item-card > div:first-child{min-width:0!important;flex:1 1 auto!important;gap:0.75rem!important}
+    .item-card .item-name{font-size:0.9rem!important;line-height:1.25!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .item-card .item-price{font-size:0.78rem!important}
+    .item-card img{width:38px!important;height:38px!important;flex-shrink:0}
+    .item-qty{gap:0.4rem!important;flex-shrink:0!important}
+    .qty-controls{gap:5px!important}
+    .qty-btn{width:28px!important;height:28px!important;font-size:1rem!important}
+    .qty-num{font-size:1rem!important;min-width:18px!important}
+    .qty-display{min-width:22px!important;font-size:1rem!important}
     .cat-tab{font-size:0.7rem!important;padding:0.45rem 0.7rem!important;letter-spacing:1px!important}
     #item-search{font-size:16px!important;padding:0.75rem 0.85rem!important}
     .popular-hint, #popular-hint{font-size:0.78rem!important;padding:0.6rem 0.85rem!important}
