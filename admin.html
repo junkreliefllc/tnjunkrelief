@@ -1035,11 +1035,11 @@
     const date = document.getElementById('nb-date').value;
     const startHr = parseInt(document.getElementById('nb-start').value);
     const duration = (adminMode === 'labor') ? adminHours : parseInt(document.getElementById('nb-duration').value);
+    const quote = getAdminQuote();
     const overrideService = document.getElementById('nb-service').value.trim();
     const service = overrideService || (quote ? quote.summary : '');
     const overrideTotal = parseFloat(document.getElementById('nb-total').value);
     const overrideDeposit = parseFloat(document.getElementById('nb-deposit').value);
-    const quote = getAdminQuote();
     const total = !isNaN(overrideTotal) && overrideTotal > 0 ? overrideTotal : (quote ? quote.total : 0);
     const deposit = !isNaN(overrideDeposit) && overrideDeposit > 0 ? overrideDeposit : (quote ? Math.ceil(quote.total * 0.25) : 0);
     const notes = document.getElementById('nb-notes').value.trim();
