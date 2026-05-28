@@ -828,13 +828,8 @@
       const discount = getDiscount(totalQty);
       const discountAmt = Math.round(subtotal * discount);
       const afterDiscount = subtotal - discountAmt;
-      const allLight = selectedItems.length > 0 && selectedItems.every(i => i.light === true);
       let extraNote = '';
-      if (allLight) {
-        // Light path: floor of MIN_LIGHT, no transfer fee
-        amount = Math.max(afterDiscount, MIN_LIGHT);
-        extraNote = afterDiscount < MIN_LIGHT ? ` (Light-item minimum $${MIN_LIGHT} applied)` : '';
-      } else if (afterDiscount >= MINIMUM) {
+      if (afterDiscount >= MINIMUM) {
         amount = afterDiscount + TRANSFER_FEE;
         extraNote = ` + Transfer Fee $${TRANSFER_FEE}`;
       } else {
@@ -1074,7 +1069,6 @@
   // ── State ──
   let mode = 'items';
   const MINIMUM = 95;
-  const MIN_LIGHT = 85;
   const TRANSFER_FEE = 55;
 
   const ITEM_ICONS = {
@@ -1211,20 +1205,20 @@
     {id:'ab-queen',   label:'Adjustable Base - Queen',        price:60,  cat:'bedroom'},
     {id:'ab-king',    label:'Adjustable Base - King/Cal King',price:72,  cat:'bedroom'},
     // Mattresses
-    {id:'mat-crib',   label:'Mattress - Crib',                price:25,  cat:'bedroom', light:true},
+    {id:'mat-crib',   label:'Mattress - Crib',                price:25,  cat:'bedroom'},
     {id:'mat-twin',   label:'Mattress - Twin',                price:35,  cat:'bedroom'},
     {id:'mat-full',   label:'Mattress - Full',                price:50,  cat:'bedroom'},
     {id:'mat-queen',  label:'Mattress - Queen',               price:57,  cat:'bedroom'},
     {id:'mat-king',   label:'Mattress - King/Cal King',       price:67,  cat:'bedroom'},
-    {id:'mat-topper', label:'Mattress Topper',                price:20,  cat:'bedroom', light:true},
+    {id:'mat-topper', label:'Mattress Topper',                price:20,  cat:'bedroom'},
     // Bed Frames
     {id:'bf-twin',    label:'Bed Frame - Twin',               price:37,  cat:'bedroom'},
     {id:'bf-full',    label:'Bed Frame - Full',               price:42,  cat:'bedroom'},
     {id:'bf-queen',   label:'Bed Frame - Queen',              price:47,  cat:'bedroom'},
     {id:'bf-king',    label:'Bed Frame - King',               price:57,  cat:'bedroom'},
-    {id:'headboard',  label:'Headboard',                      price:25,  cat:'bedroom', light:true},
-    {id:'footboard',  label:'Footboard',                      price:25,  cat:'bedroom', light:true},
-    {id:'nightstand', label:'Nightstand',                     price:20,  cat:'bedroom', light:true},
+    {id:'headboard',  label:'Headboard',                      price:25,  cat:'bedroom'},
+    {id:'footboard',  label:'Footboard',                      price:25,  cat:'bedroom'},
+    {id:'nightstand', label:'Nightstand',                     price:20,  cat:'bedroom'},
     {id:'armoire',    label:'Armoire / Wardrobe',             price:75,  cat:'bedroom'},
     {id:'bunk-dis',   label:'Bunk Bed (disassembled)',        price:85,  cat:'bedroom'},
     {id:'bunk-nondis',label:'Bunk Bed (not disassembled)',    price:125, cat:'bedroom'},
@@ -1247,13 +1241,13 @@
     {id:'sec-rcl',    label:'Sectional w/ Built-in Recliner', price:260, cat:'living'},
     {id:'sec-slp',    label:'Sectional w/ Built-in Sleeper',  price:285, cat:'living'},
     // Living Room
-    {id:'coffee',     label:'Coffee Table',                   price:25,  cat:'living', light:true},
-    {id:'endtbl',     label:'End Table',                      price:20,  cat:'living', light:true},
+    {id:'coffee',     label:'Coffee Table',                   price:25,  cat:'living'},
+    {id:'endtbl',     label:'End Table',                      price:20,  cat:'living'},
     {id:'tvstand',    label:'TV Stand / Entertainment Center',price:45,  cat:'living'},
-    {id:'shelf-sm',   label:'Bookshelf - Small',              price:20,  cat:'living', light:true},
+    {id:'shelf-sm',   label:'Bookshelf - Small',              price:20,  cat:'living'},
     {id:'shelf-lg',   label:'Bookshelf - Large',              price:35,  cat:'living'},
-    {id:'ottoman',    label:'Ottoman',                        price:20,  cat:'living', light:true},
-    {id:'accent',     label:'Accent Chair',                   price:25,  cat:'living', light:true},
+    {id:'ottoman',    label:'Ottoman',                        price:20,  cat:'living'},
+    {id:'accent',     label:'Accent Chair',                   price:25,  cat:'living'},
     // Appliances
     {id:'fridge',     label:'Refrigerator',                   price:87,  cat:'appliance'},
     {id:'minifridge', label:'Mini Fridge',                    price:42,  cat:'appliance'},
@@ -1262,18 +1256,18 @@
     {id:'dryer',      label:'Dryer',                          price:62,  cat:'appliance'},
     {id:'dishwasher', label:'Dishwasher',                     price:52,  cat:'appliance'},
     {id:'stove',      label:'Stove / Range',                  price:65,  cat:'appliance'},
-    {id:'microwave',  label:'Microwave',                      price:27,  cat:'appliance', light:true},
+    {id:'microwave',  label:'Microwave',                      price:27,  cat:'appliance'},
     {id:'waterheater',label:'Water Heater',                   price:85,  cat:'appliance'},
     {id:'ac-window',  label:'AC Unit (window)',               price:47,  cat:'appliance'},
     {id:'ac-central', label:'AC Unit (central/split)',        price:110, cat:'appliance'},
     // Electronics
-    {id:'tv-sm',      label:'TV under 40"',                   price:35,  cat:'electronics', light:true},
+    {id:'tv-sm',      label:'TV under 40"',                   price:35,  cat:'electronics'},
     {id:'tv-md',      label:'TV 40"–60"',                    price:55,  cat:'electronics'},
     {id:'tv-lg',      label:'TV over 60"',                    price:75,  cat:'electronics'},
-    {id:'desktop',    label:'Desktop Computer',               price:30,  cat:'electronics', light:true},
-    {id:'laptop',     label:'Laptop',                         price:20,  cat:'electronics', light:true},
-    {id:'printer',    label:'Printer',                        price:25,  cat:'electronics', light:true},
-    {id:'monitor',    label:'Monitor',                        price:25,  cat:'electronics', light:true},
+    {id:'desktop',    label:'Desktop Computer',               price:30,  cat:'electronics'},
+    {id:'laptop',     label:'Laptop',                         price:20,  cat:'electronics'},
+    {id:'printer',    label:'Printer',                        price:25,  cat:'electronics'},
+    {id:'monitor',    label:'Monitor',                        price:25,  cat:'electronics'},
     // Office
     {id:'offchair',   label:'Office Chair',                   price:32,  cat:'office'},
     {id:'desk-sm',    label:'Desk - Small',                   price:50,  cat:'office'},
@@ -1281,7 +1275,7 @@
     {id:'file2',      label:'Filing Cabinet - 2 Drawer',      price:42,  cat:'office'},
     {id:'file4',      label:'Filing Cabinet - 4 Drawer',      price:62,  cat:'office'},
     // Cardboard
-    {id:'card-box',   label:'Cardboard Box (not broken down)',price:8,   cat:'cardboard', light:true},
+    {id:'card-box',   label:'Cardboard Box (not broken down)',price:8,   cat:'cardboard'},
     {id:'card-10',    label:'Bundle of 10 Broken Down Boxes', price:27,  cat:'cardboard'},
     {id:'card-sm',    label:'Cardboard - Small Bale',         price:45,  cat:'cardboard'},
     {id:'card-md',    label:'Cardboard - Medium Bale',        price:82,  cat:'cardboard'},
@@ -1291,36 +1285,36 @@
     {id:'mower-ride', label:'Lawn Mower (riding)',            price:130, cat:'outdoor'},
     {id:'grill-sm',   label:'Grill - Small',                  price:40,  cat:'outdoor'},
     {id:'grill-lg',   label:'Grill - Large',                  price:60,  cat:'outdoor'},
-    {id:'patio-chair',label:'Patio Chair',                    price:17,  cat:'outdoor', light:true},
+    {id:'patio-chair',label:'Patio Chair',                    price:17,  cat:'outdoor'},
     {id:'patio-tbl',  label:'Patio Table',                    price:40,  cat:'outdoor'},
     {id:'patio-set',  label:'Patio Set (table + 4 chairs)',   price:90,  cat:'outdoor'},
     {id:'swing-dis',  label:'Swing Set (disassembled)',       price:102, cat:'outdoor'},
     {id:'swing-nodis',label:'Swing Set (not disassembled)',   price:162, cat:'outdoor'},
     {id:'trampoline', label:'Trampoline',                     price:130, cat:'outdoor'},
     {id:'shed',       label:'Shed (contents only)',           price:162, cat:'outdoor'},
-    {id:'fence',      label:'Fence Panel (each)',             price:16,  cat:'outdoor', light:true},
-    {id:'yardwaste',  label:'Bag of Yard Waste (each)',       price:11,  cat:'outdoor', light:true},
+    {id:'fence',      label:'Fence Panel (each)',             price:16,  cat:'outdoor'},
+    {id:'yardwaste',  label:'Bag of Yard Waste (each)',       price:11,  cat:'outdoor'},
     // Exercise
     {id:'tread-fold', label:'Treadmill (foldable/small)',     price:65,  cat:'exercise'},
     {id:'tread-res',  label:'Treadmill - Residential',        price:107, cat:'exercise'},
     {id:'tread-com',  label:'Treadmill - Commercial',         price:225, cat:'exercise'},
     {id:'bench',      label:'Weight Bench',                   price:52,  cat:'exercise'},
-    {id:'dumbbells',  label:'Dumbbells (per set)',            price:30,  cat:'exercise', light:true},
+    {id:'dumbbells',  label:'Dumbbells (per set)',            price:30,  cat:'exercise'},
     {id:'elliptical', label:'Elliptical',                     price:97,  cat:'exercise'},
     {id:'statbike',   label:'Stationary Bike',                price:62,  cat:'exercise'},
     {id:'rowing',     label:'Rowing Machine',                 price:75,  cat:'exercise'},
     {id:'sqrack',     label:'Weight/Squat Rack',              price:107, cat:'exercise'},
     // Misc
-    {id:'bagmisc',    label:'Bag of Miscellaneous Junk',      price:12,  cat:'misc', light:true},
+    {id:'bagmisc',    label:'Bag of Miscellaneous Junk',      price:12,  cat:'misc'},
     {id:'piano',      label:'Piano (upright)',                 price:275, cat:'misc'},
-    {id:'safe-personal',label:'Safe - Personal (<30 lbs)',     price:25,  cat:'misc', light:true},
+    {id:'safe-personal',label:'Safe - Personal (<30 lbs)',     price:25,  cat:'misc'},
     {id:'safe-sm',    label:'Safe (under 100 lbs)',           price:87,  cat:'misc'},
     {id:'safe-lg',    label:'Safe (over 100 lbs)',            price:162, cat:'misc'},
     {id:'hottub',     label:'Hot Tub',                        price:375, cat:'misc'},
     {id:'pooltable',  label:'Pool Table',                     price:225, cat:'misc'},
-    {id:'clothing',   label:'Bag of Clothing',                price:12,  cat:'misc', light:true},
-    {id:'tire',       label:'Tire (each)',                    price:17,  cat:'misc', light:true},
-    {id:'debrisblg',  label:'Bag of Construction Debris',     price:22,  cat:'misc', light:true},
+    {id:'clothing',   label:'Bag of Clothing',                price:12,  cat:'misc'},
+    {id:'tire',       label:'Tire (each)',                    price:17,  cat:'misc'},
+    {id:'debrisblg',  label:'Bag of Construction Debris',     price:22,  cat:'misc'},
   ];
 
   const loadPrices = {small:175,medium:325,large:575,xl:850,estate:null};
@@ -1475,15 +1469,8 @@
       }
 
       const afterDiscount = subtotal - discountAmt;
-      const allLight = selectedItems.length > 0 && selectedItems.every(i => i.light === true);
       let total;
-      if (allLight) {
-        // Light path: floor of MIN_LIGHT, no transfer fee
-        total = Math.max(afterDiscount, MIN_LIGHT);
-        if (afterDiscount < MIN_LIGHT) {
-          html += `<div class="price-line" style="color:#888;font-size:0.78rem"><span>* $${MIN_LIGHT} light-item minimum applied</span><span></span></div>`;
-        }
-      } else if (afterDiscount >= MINIMUM) {
+      if (afterDiscount >= MINIMUM) {
         total = afterDiscount + TRANSFER_FEE;
         html += `<div class="price-line" style="color:#aaa;font-size:0.82rem"><span>Transfer Fee</span><span>$${TRANSFER_FEE}</span></div>`;
       } else {
@@ -1598,12 +1585,8 @@
       const discount = getDiscount(totalQty);
       const discountAmt = Math.round(subtotal * discount);
       const afterDiscount = subtotal - discountAmt;
-      const allLight = selectedItems.length > 0 && selectedItems.every(i => i.light === true);
       let total, extraLine;
-      if (allLight) {
-        total = Math.max(afterDiscount, MIN_LIGHT);
-        extraLine = afterDiscount < MIN_LIGHT ? `<br><strong>Light-Item Minimum:</strong> $${MIN_LIGHT} applied` : '';
-      } else if (afterDiscount >= MINIMUM) {
+      if (afterDiscount >= MINIMUM) {
         total = afterDiscount + TRANSFER_FEE;
         extraLine = `<br><strong>Transfer Fee:</strong> $${TRANSFER_FEE}`;
       } else {
@@ -1637,13 +1620,10 @@
     } else if (mode==='photo') {
       pricingStr=`AI Photo Estimate:\n  ${aiSummaryText}\n\nEstimated Total: $${aiEstimatedTotal}`;
     } else if (mode==='items') {
-      const selectedItems = CATALOG.filter(i=>qtys[i.id]>0);
-      let subtotal = selectedItems.reduce((s,i)=>s+qtys[i.id]*i.price,0);
-      const allLight = selectedItems.length > 0 && selectedItems.every(i => i.light === true);
-      const floor = allLight ? MIN_LIGHT : MINIMUM;
-      const total = Math.max(subtotal, floor);
-      const list = selectedItems.map(i=>`  ${qtys[i.id]}x ${i.label} ($${i.price} each)`).join('\n');
-      pricingStr=`Items Selected:\n${list}${total>subtotal?`\n\n  ${allLight?'Light-item':'Service'} minimum applied`:''}  \n\nEstimated Total: $${total}`;
+      let subtotal = CATALOG.filter(i=>qtys[i.id]>0).reduce((s,i)=>s+qtys[i.id]*i.price,0);
+      const total = Math.max(subtotal, MINIMUM);
+      const list = CATALOG.filter(i=>qtys[i.id]>0).map(i=>`  ${qtys[i.id]}x ${i.label} ($${i.price} each)`).join('\n');
+      pricingStr=`Items Selected:\n${list}${total>subtotal?'\n\n  Minimum charge applied':''}  \n\nEstimated Total: $${total}`;
     } else {
       pricingStr=`Load Size: ${loadLabels[selLoadKey]}\nEstimated Total: $${loadPrices[selLoadKey]}`;
     }
