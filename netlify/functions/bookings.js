@@ -45,7 +45,7 @@ exports.handler = async (event) => {
   // POST — save a new booked slot
   if (event.httpMethod === 'POST') {
     try {
-      const { dateKey, startHr, endHr, customerName, phone, email, service, stripeId } = JSON.parse(event.body);
+      const { dateKey, startHr, endHr, customerName, phone, email, address, notes, service, stripeId, total, deposit } = JSON.parse(event.body);
 
       if (!dateKey || startHr === undefined || endHr === undefined) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
@@ -60,14 +60,22 @@ exports.handler = async (event) => {
       }
 
       if (!bookings[dateKey]) bookings[dateKey] = [];
+      const bookingId = 'bk_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36).substring(-4);
       bookings[dateKey].push({
+        bookingId,
         startHr,
         endHr,
         customerName: customerName || '',
         phone: phone || '',
         email: email || '',
+        address: address || '',
+        notes: notes || '',
         service: service || '',
         stripeId: stripeId || '',
+        total: Number(total) || 0,
+        deposit: Number(deposit) || 0,
+        balancePaid: 0,
+        paymentStatus: 'awaiting',
         bookedAt: new Date().toISOString()
       });
 
