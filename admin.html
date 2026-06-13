@@ -565,6 +565,59 @@
   </div>
 </div>
 
+<!-- Send Balance Request Modal -->
+<div class="modal-overlay" id="balance-modal" onclick="if(event.target===this)closeBalanceModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>💳 Send Balance Request</h2>
+      <button class="modal-close" onclick="closeBalanceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="result-banner" id="bal-result"></div>
+
+      <div style="background:#111;border-left:3px solid #E31212;padding:0.9rem 1.1rem;margin-bottom:1.25rem;font-size:0.88rem;color:#ccc;line-height:1.6">
+        Sending balance request to <strong style="color:#fff" id="bal-customer">—</strong><br>
+        <span style="color:#888;font-size:0.82rem" id="bal-email-note">—</span>
+      </div>
+
+      <div id="bal-breakdown" style="background:#0f0f0f;border:1px solid #222;padding:0.85rem 1rem;margin-bottom:1.25rem;font-size:0.85rem;color:#aaa"></div>
+
+      <div class="form-row">
+        <label>Balance Amount ($) *</label>
+        <input type="number" id="bal-amount" placeholder="0.00" min="0.50" step="0.01">
+        <div style="font-size:0.7rem;color:#555;margin-top:0.35rem">Defaults to (Total − Deposit). Edit if needed for cash partials or extra charges.</div>
+      </div>
+
+      <div class="form-section-heading">Confirm</div>
+      <div class="form-row">
+        <label>Your Admin Password *</label>
+        <input type="password" id="bal-password" placeholder="Required to send">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-cancel" onclick="closeBalanceModal()">Cancel</button>
+      <button class="btn-modal btn-create" onclick="submitBalanceRequest()" id="bal-submit" style="background:#E31212;color:#fff;border-color:#E31212">Send Payment Link</button>
+    </div>
+  </div>
+</div>
+
+  <div class="section-h" style="margin-top:2rem">📅 My Unavailable Days</div>
+  <div style="background:#0f0f0f;border:1px solid #222;padding:1rem;margin-bottom:1.25rem">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem">
+      <div style="flex:1;min-width:160px">
+        <label style="display:block;font-size:0.7rem;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:0.3rem">Date to block</label>
+        <input type="date" id="unav-date" style="width:100%;padding:0.55rem;background:#0a0a0a;border:1px solid #333;color:#f5f5f0;font-family:inherit">
+      </div>
+      <div style="flex:2;min-width:200px">
+        <label style="display:block;font-size:0.7rem;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:0.3rem">Reason (optional)</label>
+        <input type="text" id="unav-note" placeholder="Vacation, sick day, etc." style="width:100%;padding:0.55rem;background:#0a0a0a;border:1px solid #333;color:#f5f5f0;font-family:inherit">
+      </div>
+      <button class="ab" style="background:#E31212;color:#fff;border:1px solid #E31212;padding:0.55rem 1.2rem;font-weight:700" onclick="addUnavailableDay()">+ Block Day</button>
+    </div>
+    <div id="unav-result" class="result-banner" style="display:none;margin-bottom:0.75rem"></div>
+    <div id="unav-list" style="font-size:0.85rem;color:#888">Loading…</div>
+  </div>
+
   <div class="section-h" style="margin-top:2rem">Actions</div>
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
     <button class="ab ab-ghost" onclick="loadBookings()" style="padding:0.7rem 1.2rem">🔄 Refresh</button>
@@ -626,6 +679,7 @@
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-content').style.display = 'block';
     loadBookings();
+    loadUnavailable();
   }
 
   // ── Data ──
@@ -750,6 +804,10 @@
             <div style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:0.5rem">Manage Booking</div>
             <div class="action-btns">
               <button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50" onclick="openAdjustModal('${b.dateKey}', ${b.startHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">➕ Adjust Job</button>
+              ${b.balanceRequest && b.balanceRequest.status === 'paid'
+                ? `<span class="ab" style="background:#1a3a1a;border:1px solid #4caf50;color:#4caf50;cursor:default">✅ Balance Paid${b.balanceRequest.tipPaid > 0 ? ` (+$${b.balanceRequest.tipPaid} tip)` : ''}</span>`
+                : `<button class="ab" style="background:#2a2a2a;border:1px solid #E31212;color:#E31212" onclick="openBalanceModal('${b.bookingId || ''}', '${b.dateKey}', ${b.total || 0}, ${b.deposit || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}', '${b.email || ''}')">💳 Send Balance Request</button>`
+              }
               <button class="ab" style="background:#2a2a2a;border:1px solid #f5a623;color:#f5a623" onclick="deleteBooking('${b.dateKey}', ${b.startHr || 0}, '${b.stripeId || ''}', true, '${(b.customerName || 'this customer').replace(/'/g,'')}')">💸 Cancel & Refund</button>
               <button class="ab ab-ghost" onclick="deleteBooking('${b.dateKey}', ${b.startHr || 0}, '${b.stripeId || ''}', false, '${(b.customerName || 'this customer').replace(/'/g,'')}')">🗑 Remove Only</button>
             </div>
@@ -1216,6 +1274,195 @@
   window.openAdjustModal = openAdjustModal;
   window.closeAdjustModal = closeAdjustModal;
   window.submitAdjustment = submitAdjustment;
+
+  // ── Send Balance Request modal ──
+  let currentBalanceContext = null;
+
+  function openBalanceModal(bookingId, dateKey, total, deposit, customerName, email) {
+    currentBalanceContext = { bookingId, dateKey, total, deposit, customerName, email };
+    document.getElementById('bal-customer').textContent = customerName || 'customer';
+    document.getElementById('bal-email-note').textContent = email
+      ? `📧 Will email link to ${email}`
+      : '⚠️ No email on file — link will be displayed only';
+
+    const totalN = Number(total) || 0;
+    const depositN = Number(deposit) || 0;
+    const balance = Math.max(0, totalN - depositN);
+    document.getElementById('bal-amount').value = balance.toFixed(2);
+
+    let breakdown = '';
+    if (totalN > 0) breakdown += `<div style="display:flex;justify-content:space-between;padding:2px 0"><span>Total quoted</span><span>$${totalN.toFixed(2)}</span></div>`;
+    if (depositN > 0) breakdown += `<div style="display:flex;justify-content:space-between;padding:2px 0;color:#4caf50"><span>Deposit paid</span><span>−$${depositN.toFixed(2)}</span></div>`;
+    if (breakdown) breakdown += `<div style="display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:1px solid #222;font-weight:700;color:#fff"><span>Suggested balance</span><span>$${balance.toFixed(2)}</span></div>`;
+    document.getElementById('bal-breakdown').innerHTML = breakdown || '<div style="color:#666">No prior pricing on file. Enter balance amount manually.</div>';
+
+    document.getElementById('bal-password').value = '';
+    document.getElementById('bal-result').style.display = 'none';
+    document.getElementById('bal-submit').disabled = false;
+    document.getElementById('bal-submit').textContent = 'Send Payment Link';
+    document.getElementById('balance-modal').classList.add('open');
+  }
+
+  function closeBalanceModal() {
+    document.getElementById('balance-modal').classList.remove('open');
+    currentBalanceContext = null;
+  }
+
+  async function submitBalanceRequest() {
+    if (!currentBalanceContext) return;
+    const { bookingId, dateKey } = currentBalanceContext;
+    const amount = parseFloat(document.getElementById('bal-amount').value);
+    const password = document.getElementById('bal-password').value;
+    const banner = document.getElementById('bal-result');
+    const submitBtn = document.getElementById('bal-submit');
+
+    if (!bookingId) {
+      banner.className = 'result-banner err';
+      banner.textContent = 'This booking is missing a bookingId. Older bookings may not support balance links yet. Re-create the booking or use Adjust Job instead.';
+      banner.style.display = 'block';
+      return;
+    }
+    if (!amount || amount < 0.50) {
+      banner.className = 'result-banner err';
+      banner.textContent = 'Enter a valid amount of $0.50 or more.';
+      banner.style.display = 'block';
+      return;
+    }
+    if (!password) {
+      banner.className = 'result-banner err';
+      banner.textContent = 'Admin password required.';
+      banner.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    try {
+      const res = await fetch('/.netlify/functions/create-balance-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'admin', password, bookingId, dateKey, amount })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+
+      banner.className = 'result-banner ok';
+      let msg = '✅ Payment link created.';
+      if (data.emailSent) msg += ' Email sent to customer.';
+      else msg += ' Copy the link below and send it to the customer:';
+      banner.innerHTML = `${msg}<br><br>
+        <input type="text" value="${data.payUrl}" readonly style="width:100%;padding:8px;background:#0a0a0a;border:1px solid #333;color:#f5f5f0;font-family:monospace;font-size:11px" onclick="this.select()">
+        <button onclick="navigator.clipboard.writeText('${data.payUrl}').then(()=>this.textContent='Copied ✓')" style="margin-top:8px;padding:8px 14px;background:#E31212;color:#fff;border:none;font-weight:700;cursor:pointer;font-size:12px">Copy Link</button>`;
+      banner.style.display = 'block';
+      submitBtn.textContent = 'Sent ✓';
+      // Refresh bookings to show new state
+      setTimeout(() => loadBookings(), 1500);
+    } catch (err) {
+      banner.className = 'result-banner err';
+      banner.textContent = 'Error: ' + err.message;
+      banner.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send Payment Link';
+    }
+  }
+
+  window.openBalanceModal = openBalanceModal;
+  window.closeBalanceModal = closeBalanceModal;
+  window.submitBalanceRequest = submitBalanceRequest;
+
+  // ── Unavailability Management ──
+  async function loadUnavailable() {
+    const listEl = document.getElementById('unav-list');
+    if (!listEl) return;
+    try {
+      const res = await fetch('/.netlify/functions/unavailability');
+      const days = await res.json();
+      if (!Array.isArray(days) || days.length === 0) {
+        listEl.innerHTML = '<div style="color:#555;padding:0.6rem 0">No unavailable days set. Use the form above to block dates.</div>';
+        return;
+      }
+      // Sort by dateKey ascending
+      days.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+      const today = new Date().toISOString().slice(0, 10);
+      listEl.innerHTML = days.map(d => {
+        const dateObj = new Date(d.dateKey + 'T12:00:00');
+        const fmt = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        const isPast = d.dateKey < today;
+        const color = isPast ? '#444' : '#f5f5f0';
+        const note = d.note ? ` <span style="color:#888;font-style:italic">— ${escapeHtml(d.note)}</span>` : '';
+        const pastBadge = isPast ? ' <span style="font-size:0.7rem;color:#555">(past)</span>' : '';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.7rem;background:#0a0a0a;border:1px solid #1f1f1f;margin-bottom:0.4rem">
+          <div style="color:${color}"><strong>${fmt}</strong>${note}${pastBadge}</div>
+          <button onclick="removeUnavailable('${d.dateKey}')" style="background:#2a2a2a;color:#f5a623;border:1px solid #f5a623;padding:0.3rem 0.7rem;cursor:pointer;font-size:0.75rem;font-weight:700">Remove</button>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      listEl.innerHTML = `<div style="color:#E31212">Could not load: ${err.message}</div>`;
+    }
+  }
+
+  async function addUnavailableDay() {
+    const dateKey = document.getElementById('unav-date').value;
+    const note = document.getElementById('unav-note').value.trim();
+    const banner = document.getElementById('unav-result');
+
+    if (!dateKey) {
+      banner.className = 'result-banner err';
+      banner.textContent = 'Please pick a date to block.';
+      banner.style.display = 'block';
+      return;
+    }
+    const pw = prompt('Confirm your admin password to block this date:');
+    if (!pw) return;
+
+    try {
+      const res = await fetch('/.netlify/functions/unavailability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, dateKey, note })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      banner.className = 'result-banner ok';
+      banner.textContent = `✅ Blocked ${dateKey}${note ? ` (${note})` : ''}`;
+      banner.style.display = 'block';
+      document.getElementById('unav-date').value = '';
+      document.getElementById('unav-note').value = '';
+      loadUnavailable();
+      setTimeout(() => { banner.style.display = 'none'; }, 3000);
+    } catch (err) {
+      banner.className = 'result-banner err';
+      banner.textContent = 'Error: ' + err.message;
+      banner.style.display = 'block';
+    }
+  }
+
+  async function removeUnavailable(dateKey) {
+    if (!confirm(`Remove block on ${dateKey}?\n\nThis will allow customers to book on this date again.`)) return;
+    const pw = prompt('Confirm your admin password to remove this block:');
+    if (!pw) return;
+    try {
+      const res = await fetch('/.netlify/functions/unavailability', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, dateKey })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      loadUnavailable();
+    } catch (err) {
+      alert('Could not remove: ' + err.message);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  window.addUnavailableDay = addUnavailableDay;
+  window.removeUnavailable = removeUnavailable;
+  window.loadUnavailable = loadUnavailable;
 
   // ── Delete booking (with optional refund) ──
   async function deleteBooking(dateKey, startHr, stripeId, refund, customerName) {
