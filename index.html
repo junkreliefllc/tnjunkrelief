@@ -876,6 +876,10 @@
 
       const dateFormatted = selDateKey ? new Date(selDateKey+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) : '—';
 
+      // Compute totals up-front so we can store them with the booking
+      const _depositAmt  = mode==='labor' ? Math.ceil(crewRates[selectedCrew]*laborHours*0.25) : amount;
+      const _totalAmt    = mode==='labor' ? crewRates[selectedCrew]*laborHours : amount;
+
       // Save booked slot to backend so it blocks for future customers
       await saveBookedSlot(
         selDateKey,
@@ -884,7 +888,11 @@
         `${fname} ${lname}`,
         phone, email,
         pricingStr,
-        paymentIntent.id
+        paymentIntent.id,
+        address,
+        notes,
+        _totalAmt,
+        _depositAmt
       );
 
       // Build items payload for confirmation pages
@@ -902,8 +910,8 @@
         itemsPayload = [{ name: selectedCrew + ' Man Crew @ $' + rate + '/hr x ' + laborHours + ' hrs', qty: 1, unit: rate*laborHours, sub: rate*laborHours }];
       }
 
-      const depositAmt  = mode==='labor' ? Math.ceil(crewRates[selectedCrew]*laborHours*0.25) : amount;
-      const totalAmt    = mode==='labor' ? crewRates[selectedCrew]*laborHours : amount;
+      const depositAmt  = _depositAmt;
+      const totalAmt    = _totalAmt;
       const balanceAmt  = totalAmt - depositAmt;
 
       const confirmParams = new URLSearchParams({
@@ -1549,7 +1557,7 @@
     if (step===2 && currentStep===1) {
       jobDurationHrs = getJobDuration();
       document.getElementById('dur-hrs').textContent = jobDurationHrs + ' hour' + (jobDurationHrs>1?'s':'');
-      loadBookedSlots().then(() => buildCalendar());
+      Promise.all([loadBookedSlots(), loadOwnerBlocked()]).then(() => buildCalendar());
     }
     document.getElementById('panel-'+currentStep).classList.remove('active');
     document.getElementById('prog-'+currentStep).classList.remove('active');
@@ -1654,6 +1662,17 @@
   const CAL_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const UNAVAIL_DAYS = [0,1,6]; // Sun Mon Sat — available Tue-Fri only
   let BOOKED_SLOTS = {}; // loaded from backend on page load
+  let OWNER_BLOCKED = new Set(); // owner-blocked dateKeys, loaded from backend
+
+  async function loadOwnerBlocked() {
+    try {
+      const res = await fetch('/.netlify/functions/unavailability');
+      const data = await res.json();
+      OWNER_BLOCKED = new Set((data || []).map(d => d.dateKey));
+    } catch(e) {
+      console.log('Could not load owner-blocked days:', e);
+    }
+  }
 
   async function loadBookedSlots() {
     try {
@@ -1668,12 +1687,12 @@
     }
   }
 
-  async function saveBookedSlot(dateKey, startHr, endHr, customerName, phone, email, service, stripeId) {
+  async function saveBookedSlot(dateKey, startHr, endHr, customerName, phone, email, service, stripeId, address, notes, total, deposit) {
     try {
       await fetch('/.netlify/functions/bookings', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ dateKey, startHr, endHr, customerName, phone, email, service, stripeId })
+        body: JSON.stringify({ dateKey, startHr, endHr, customerName, phone, email, service, stripeId, address, notes, total, deposit })
       });
       // Update local cache immediately
       if (!BOOKED_SLOTS[dateKey]) BOOKED_SLOTS[dateKey] = [];
@@ -1722,11 +1741,11 @@
       // Earliest bookable day = next business day (skip Sundays since shop is closed Sun)
       const earliest = (function(){
         const e = new Date(today.getFullYear(),today.getMonth(),today.getDate()+1);
-        while (UNAVAIL_DAYS.includes(e.getDay())) e.setDate(e.getDate()+1);
+        while (UNAVAIL_DAYS.includes(e.getDay()) || OWNER_BLOCKED.has(e.toISOString().slice(0,10))) e.setDate(e.getDate()+1);
         return e;
       })();
       const isPast = dt < earliest;
-      const isUnavail = UNAVAIL_DAYS.includes(dt.getDay());
+      const isUnavail = UNAVAIL_DAYS.includes(dt.getDay()) || OWNER_BLOCKED.has(key);
       const isSel = selDateKey === key;
       let style = `text-align:center;padding:0.4rem 0.2rem;font-size:0.85rem;border-radius:2px;cursor:`;
       if (isPast||isUnavail) {
@@ -1821,6 +1840,7 @@
     renderItems();
     buildCalendar();
     loadBookedSlots();
+    loadOwnerBlocked();
   });
 
   function toggleMobileMenu() {
