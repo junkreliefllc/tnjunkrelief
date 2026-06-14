@@ -273,6 +273,9 @@
     .modal-footer .btn-modal{width:100%}
     .form-row label{font-size:0.65rem}
     .form-grid-2,.form-grid-3{grid-template-columns:1fr;gap:0.5rem}
+
+    /* Block Day button: full width on mobile so it matches other CTAs */
+    .ab[onclick*="addUnavailableDay"]{width:100%;justify-content:center;margin-top:0.5rem}
     .mode-tabs{grid-template-columns:1fr;gap:3px}
     .mode-tab{padding:0.6rem;font-size:0.7rem}
     .opt-grid{grid-template-columns:1fr 1fr}
@@ -773,6 +776,9 @@
         : isPast
           ? '<span class="booking-badge badge-past">Past</span>'
           : '<span class="booking-badge badge-upcoming">Upcoming</span>';
+      const completedBadge = b.jobStatus === 'completed'
+        ? '<span class="booking-badge" style="background:#1a3a1a;color:#4caf50;border:1px solid #4caf50">✅ Completed</span>'
+        : '';
 
       const phone = b.phone ? `<a href="tel:${b.phone.replace(/\D/g,'')}">${b.phone}</a>` : '—';
       const email = b.email ? `<a href="mailto:${b.email}">${b.email}</a>` : '—';
@@ -785,6 +791,7 @@
             <div class="booking-date">${dateLabel}</div>
             <div class="booking-time">${startFmt} – ${endFmt}</div>
             ${badge}
+            ${completedBadge}
           </div>
           <div style="display:flex;align-items:center;gap:1rem">
             <div class="booking-name">${b.customerName || 'Unknown'}</div>
@@ -807,6 +814,11 @@
           <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #222">
             <div style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:0.5rem">Manage Booking</div>
             <div class="action-btns">
+              ${b.jobStatus === 'completed'
+                ? `<span class="ab" style="background:#1a3a1a;border:1px solid #4caf50;color:#4caf50;cursor:default">✅ Completed${b.completedAt ? ` ${new Date(b.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}</span>
+                   <button class="ab ab-ghost" onclick="toggleComplete('${b.dateKey}', '${b.bookingId || ''}', ${b.startHr || 0}, 'unmark')" style="font-size:0.65rem">↶ Undo</button>`
+                : `<button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50;font-weight:700" onclick="toggleComplete('${b.dateKey}', '${b.bookingId || ''}', ${b.startHr || 0}, 'mark')">✅ Mark Complete</button>`
+              }
               <button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50" onclick="openAdjustModal('${b.dateKey}', ${b.startHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">➕ Adjust Job</button>
               ${b.balanceRequest && b.balanceRequest.status === 'paid'
                 ? `<span class="ab" style="background:#1a3a1a;border:1px solid #4caf50;color:#4caf50;cursor:default">✅ Balance Paid${b.balanceRequest.tipPaid > 0 ? ` (+$${b.balanceRequest.tipPaid} tip)` : ''}</span>`
@@ -1467,6 +1479,27 @@
   window.addUnavailableDay = addUnavailableDay;
   window.removeUnavailable = removeUnavailable;
   window.loadUnavailable = loadUnavailable;
+
+  // ── Mark job complete / uncomplete ──
+  async function toggleComplete(dateKey, bookingId, startHr, action) {
+    const verb = action === 'mark' ? 'Mark this job as complete' : 'Undo the completed status';
+    if (!confirm(`${verb}?`)) return;
+    const pw = prompt('Confirm your admin password:');
+    if (!pw) return;
+    try {
+      const res = await fetch('/.netlify/functions/complete-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, dateKey, bookingId, startHr, action })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      loadBookings();  // refresh the list
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+  window.toggleComplete = toggleComplete;
 
   // ── Delete booking (with optional refund) ──
   async function deleteBooking(dateKey, startHr, stripeId, refund, customerName) {
