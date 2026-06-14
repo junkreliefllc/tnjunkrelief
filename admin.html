@@ -115,6 +115,7 @@
   .cal-cell.today .cal-cell-num{color:var(--green)}
   .cal-cell.past .cal-cell-num{color:#555}
   .cal-booking-dot{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:0.65rem;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;box-sizing:border-box}
+  .cal-booking-dot.done{background:var(--green)}
   .cal-clear-filter{background:var(--mid);border:1px solid #333;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer;transition:all 0.15s;display:none}
   .cal-clear-filter:hover{border-color:var(--red);color:var(--white)}
   .cal-clear-filter.visible{display:inline-block}
@@ -122,6 +123,7 @@
   .cal-legend-item{display:flex;align-items:center;gap:0.4rem}
   .cal-legend-dot{width:10px;height:10px;border-radius:50%;background:var(--red)}
   .cal-legend-dot.today{background:var(--green)}
+  .cal-legend-dot.done{background:var(--green)}
 
   /* ── MANUAL BOOKING FORM ── */
   .new-booking-btn{background:var(--red);color:#fff;border:none;font-family:'Barlow',sans-serif;font-weight:900;font-size:0.8rem;letter-spacing:1.5px;text-transform:uppercase;padding:0.85rem 1.4rem;cursor:pointer;transition:opacity 0.2s;margin-left:auto;display:inline-flex;align-items:center;gap:0.4rem}
@@ -345,8 +347,8 @@
     </div>
     <div class="cal-grid" id="cal-grid"></div>
     <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot"></div>Has bookings (number = job count)</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot today"></div>Today</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot"></div>Has bookings (number = count)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot done"></div>All jobs complete</div>
       <div class="cal-legend-item">Click a day to filter the list below</div>
     </div>
   </div>
@@ -1579,12 +1581,16 @@
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     document.getElementById('cal-title').textContent = monthNames[adminCalMonth] + ' ' + adminCalYear;
 
-    // Count bookings per date for this month
+    // Count bookings per date for this month, and track how many are completed
     const counts = {};
+    const completedCounts = {};
     allBookings.forEach(b => {
       const d = new Date(b.dateKey + 'T12:00:00');
       if (d.getFullYear() === adminCalYear && d.getMonth() === adminCalMonth) {
         counts[b.dateKey] = (counts[b.dateKey] || 0) + 1;
+        if (b.jobStatus === 'completed') {
+          completedCounts[b.dateKey] = (completedCounts[b.dateKey] || 0) + 1;
+        }
       }
     });
 
@@ -1615,7 +1621,10 @@
       if (dateKey === selectedCalDate) classes.push('selected');
 
       const count = counts[dateKey] || 0;
-      const dot = count > 0 ? `<div class="cal-booking-dot">${count}</div>` : '';
+      const completed = completedCounts[dateKey] || 0;
+      const allDone = count > 0 && completed === count;
+      const dotClass = allDone ? 'cal-booking-dot done' : 'cal-booking-dot';
+      const dot = count > 0 ? `<div class="${dotClass}" title="${allDone ? 'All jobs complete' : completed + ' of ' + count + ' complete'}">${allDone ? '✓' : count}</div>` : '';
       html += `<div class="${classes.join(' ')}" onclick="selectCalDate('${dateKey}')">
         <div class="cal-cell-num">${d}</div>${dot}
       </div>`;
