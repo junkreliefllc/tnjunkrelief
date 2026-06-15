@@ -167,9 +167,17 @@
   footer a:hover { opacity: 0.85; }
 
   /* iOS zoom prevention on input focus + small-screen tweaks */
+  /* Force tel: links to brand red regardless of browser default */
+  a[href^="tel:"]{color:var(--red)!important;text-decoration:none}
+  /* Exception: the CTA box phone button has its own styling, keep it readable */
+  .cta-block a[href^="tel:"].btn-outline{color:#000!important;background:#fff!important;border-color:#fff!important}
+
   @media(max-width:768px){
     input[type="text"],input[type="email"],input[type="tel"],input[type="number"],
     input[type="password"],input[type="date"],input[type="search"],select,textarea{font-size:16px!important}
+
+    /* Hide the giant decorative truck emoji watermark on mobile (it dominates the hero) */
+    .hero::before{display:none!important}
   }
 </style>
 </head>
@@ -325,7 +333,7 @@
 
     <div class="faq-item">
       <h3>Do you offer same-day service in Springfield?</h3>
-      <p>Yes — same-day pickup in Springfield is almost always available, especially if you book in the morning. Book online and pick the earliest available slot, or call (931) 561-0431 to check today's availability.</p>
+      <p>Yes — same-day pickup in Springfield is almost always available, especially if you book in the morning. Book online and pick the earliest available slot, or call <a href="tel:9315610431">(931) 561-0431</a> to check today's availability.</p>
     </div>
 
     <div class="faq-item">
