@@ -866,24 +866,37 @@
     }
   }
 
-  async function convertLead(leadId) {
+  // Tracks a lead that's mid-conversion. The lead is only removed once the
+  // booking is actually created (in submitNewBooking) — so backing out of
+  // the form without finishing leaves the lead safely in place.
+  let pendingConvertLeadId = null;
+
+  function convertLead(leadId) {
     const lead = allLeads.find(l => l.leadId === leadId);
     if (!lead) return;
-    const pw = prompt('Confirm your admin password to convert this lead:');
-    if (!pw) return;
+    pendingConvertLeadId = leadId;
+    openNewBookingModal({ name: lead.name, phone: lead.phone, email: lead.email, notes: lead.message });
+  }
+
+  // Called after a booking is successfully created, to clear the converted
+  // lead from the New Leads list. Best-effort: if it fails, the booking still
+  // stands and the lead just remains visible (no data loss either way).
+  async function dismissConvertedLead() {
+    if (!pendingConvertLeadId) return;
+    const leadId = pendingConvertLeadId;
+    pendingConvertLeadId = null;
+    const pw = document.getElementById('nb-password').value;
+    if (!pw) { loadLeads(); return; }
     try {
-      const res = await fetch('/.netlify/functions/leads', {
+      await fetch('/.netlify/functions/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pw, leadId, action: 'convert' })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to convert lead');
-      loadLeads();
-      openNewBookingModal({ name: lead.name, phone: lead.phone, email: lead.email, notes: lead.message });
-    } catch (err) {
-      alert('Error: ' + err.message);
+    } catch (e) {
+      // non-fatal — lead just stays in the list
     }
+    loadLeads();
   }
 
 
@@ -1295,6 +1308,10 @@
   function closeNewBookingModal() {
     document.getElementById('new-booking-modal').classList.remove('open');
     document.body.style.overflow = '';
+    // If they backed out without creating the booking, forget the pending
+    // lead conversion so the lead stays in New Leads and isn't accidentally
+    // removed later.
+    pendingConvertLeadId = null;
   }
 
   async function submitNewBooking() {
@@ -1384,6 +1401,10 @@
 
         // Refresh bookings list
         loadBookings();
+
+        // If this booking came from converting a lead, remove that lead now
+        // (only after the booking actually exists — see convertLead).
+        dismissConvertedLead();
       } else {
         banner.className = 'result-banner error';
         banner.style.display = 'block';
