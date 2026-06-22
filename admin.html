@@ -581,6 +581,14 @@
         <label>Service Description (override / extra notes shown to customer)</label>
         <textarea id="nb-service" placeholder="Optional — leave blank to use auto-generated description from your selections"></textarea>
       </div>
+      <div class="form-row" id="nb-override-total-row">
+        <label>Override Total ($)</label>
+        <input type="number" id="nb-total" placeholder="Auto from selections" min="0" step="1" oninput="updateAdminLiveQuote()">
+      </div>
+      <div class="form-row">
+        <label>Discount (%)</label>
+        <input type="number" id="nb-discount" placeholder="e.g. 10 — knocks % off the total" min="0" max="100" step="1" oninput="updateAdminLiveQuote()">
+      </div>
       <div class="form-row">
         <label>Override Deposit ($)</label>
         <input type="number" id="nb-deposit" placeholder="Auto: 25% of total" min="0" step="1" oninput="updateAdminLiveQuote()">
@@ -1154,6 +1162,9 @@
     // Hide manual duration picker when in hourly mode (hours stepper drives it)
     const durRow = document.getElementById('nb-duration-row');
     if (durRow) durRow.style.display = (m === 'labor') ? 'none' : '';
+    // Override Total doesn't apply in Custom Price mode (the mode IS setting your own price)
+    const otRow = document.getElementById('nb-override-total-row');
+    if (otRow) otRow.style.display = (m === 'custom') ? 'none' : '';
     updateAdminLiveQuote();
   }
   window.setAdminMode = setAdminMode;
@@ -1290,6 +1301,49 @@
     return null;
   }
 
+  // Single source of truth for final pricing. Takes the base quote and applies:
+  //   base subtotal -> Override Total (if set, non-custom modes) -> minus Discount %
+  //   -> deposit (Override Deposit wins, else custom-mode deposit, else 25% of final)
+  // Both the live quote and submit use this, so what you see == what's charged.
+  function computeFinalPricing(q) {
+    if (!q) return null;
+
+    // 1. Starting total: the quote's total, unless Override Total is set (non-custom).
+    let baseTotal = q.total;
+    let overrideUsed = false;
+    if (!q.isCustom) {
+      const otEl = document.getElementById('nb-total');
+      if (otEl && otEl.value.trim() !== '') {
+        const ot = parseFloat(otEl.value);
+        if (!isNaN(ot) && ot > 0) { baseTotal = Math.round(ot); overrideUsed = true; }
+      }
+    }
+
+    // 2. Discount %: knocks the percentage off the (possibly overridden) total.
+    let discountPct = 0;
+    const dEl = document.getElementById('nb-discount');
+    if (dEl && dEl.value.trim() !== '') {
+      const d = parseFloat(dEl.value);
+      if (!isNaN(d) && d > 0) discountPct = Math.min(d, 100);
+    }
+    const discountAmt = Math.round(baseTotal * (discountPct / 100));
+    const finalTotal = Math.max(0, baseTotal - discountAmt);
+
+    // 3. Deposit: Override Deposit wins; else custom-mode deposit; else 25% of final total.
+    let deposit;
+    const odEl = document.getElementById('nb-deposit');
+    if (odEl && odEl.value.trim() !== '') {
+      const od = parseFloat(odEl.value);
+      deposit = (!isNaN(od) && od >= 0) ? Math.round(od) : Math.ceil(finalTotal * 0.25);
+    } else if (q.isCustom && q.deposit !== undefined && discountPct === 0) {
+      deposit = q.deposit; // custom mode's own deposit (incl. 0), when no discount changes the total
+    } else {
+      deposit = Math.ceil(finalTotal * 0.25);
+    }
+
+    return { baseTotal, overrideUsed, discountPct, discountAmt, finalTotal, deposit };
+  }
+
   function updateAdminLiveQuote() {
     const q = getAdminQuote();
     const box = document.getElementById('admin-live-quote');
@@ -1298,22 +1352,16 @@
       box.textContent = (adminMode === 'custom') ? 'Enter an agreed total to lock in the price' : 'Select items, load size, or crew to see pricing';
       return;
     }
-    // Default deposit: custom-mode explicit deposit, else 25% of total.
-    let deposit = (q.deposit !== undefined) ? q.deposit : Math.ceil(q.total * 0.25);
-    // If the Override Deposit field has a value, that wins and shows live.
-    const odEl = document.getElementById('nb-deposit');
-    if (odEl && odEl.value.trim() !== '') {
-      const od = parseFloat(odEl.value);
-      if (!isNaN(od) && od >= 0) deposit = Math.round(od);
-    }
+    const f = computeFinalPricing(q);
     const totalLabel = q.isCustom ? 'Total' : 'Estimated Total';
     const depositLabel = q.isCustom ? 'Deposit' : 'Suggested Deposit (25%)';
     box.className = 'live-quote';
     box.innerHTML = `
-      <div class="lq-line"><span>${q.lines.length > 60 ? q.lines.substr(0,60) + '...' : q.lines}</span><span><strong>$${q.subtotal || q.total}</strong></span></div>
+      <div class="lq-line"><span>${q.lines.length > 60 ? q.lines.substr(0,60) + '...' : q.lines}</span><span><strong>$${f.overrideUsed ? f.baseTotal : (q.subtotal || q.total)}</strong></span></div>
       ${q.note ? `<div class="lq-line" style="color:#888;font-size:0.78rem"><span>${q.note}</span><span></span></div>` : ''}
-      <div class="lq-line"><span>${depositLabel}</span><span>$${deposit}</span></div>
-      <div class="lq-total"><span>${totalLabel}</span><span>$${q.total}</span></div>`;
+      ${f.discountPct > 0 ? `<div class="lq-line" style="color:#4caf50;font-size:0.82rem"><span>🏷️ ${f.discountPct}% discount</span><span>−$${f.discountAmt}</span></div>` : ''}
+      <div class="lq-line"><span>${depositLabel}</span><span>$${f.deposit}</span></div>
+      <div class="lq-total"><span>${totalLabel}</span><span>$${f.finalTotal}</span></div>`;
   }
 
   function resetAdminPricing() {
@@ -1325,11 +1373,14 @@
     if (durSel) durSel.value = '2';
     document.getElementById('admin-item-search').value = '';
     document.getElementById('admin-hours-val').textContent = '2';
-    // Clear custom price fields
-    ['nb-custom-total','nb-custom-deposit','nb-custom-desc'].forEach(id => {
+    // Clear custom price + override + discount fields
+    ['nb-custom-total','nb-custom-deposit','nb-custom-desc','nb-total','nb-discount','nb-deposit'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+    // Override Total row is visible by default (items mode); hidden only in custom mode
+    const otRow = document.getElementById('nb-override-total-row');
+    if (otRow) otRow.style.display = '';
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'items'));
     document.querySelectorAll('.mode-panel').forEach(p => p.classList.toggle('active', p.id === 'admin-mode-items'));
     renderAdminCats(); renderAdminItems(); renderAdminLoads(); renderAdminCrews();
@@ -1373,20 +1424,11 @@
     const quote = getAdminQuote();
     const overrideService = document.getElementById('nb-service').value.trim();
     const service = overrideService || (quote ? quote.summary : '');
-    const overrideDeposit = parseFloat(document.getElementById('nb-deposit').value);
-    const total = quote ? quote.total : 0;
-    // Deposit precedence: explicit Override Deposit field > custom-mode deposit
-    // (which may legitimately be 0) > auto 25% of total.
-    let deposit;
-    if (!isNaN(overrideDeposit) && overrideDeposit > 0) {
-      deposit = overrideDeposit;
-    } else if (quote && quote.deposit !== undefined) {
-      deposit = quote.deposit; // custom mode — can be 0
-    } else if (quote) {
-      deposit = Math.ceil(quote.total * 0.25);
-    } else {
-      deposit = 0;
-    }
+    // Use the SAME pricing helper as the live quote, so the amount charged
+    // exactly matches what's shown on screen (base -> override -> discount -> deposit).
+    const pricing = computeFinalPricing(quote);
+    const total = pricing ? pricing.finalTotal : 0;
+    const deposit = pricing ? pricing.deposit : 0;
     const notes = document.getElementById('nb-notes').value.trim();
     const paymentMode = document.querySelector('input[name="nb-payment"]:checked').value;
     const sendEmail = document.getElementById('nb-send-email').checked;
@@ -1459,7 +1501,7 @@
         banner.innerHTML = html;
 
         // Clear form fields (keep password for next booking)
-        ['nb-name','nb-phone','nb-email','nb-address','nb-service','nb-deposit','nb-notes'].forEach(id => {
+        ['nb-name','nb-phone','nb-email','nb-address','nb-service','nb-total','nb-discount','nb-deposit','nb-custom-total','nb-custom-deposit','nb-custom-desc','nb-notes'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.value = '';
         });
