@@ -66,6 +66,35 @@
   .badge-past{background:#222;border:1px solid #333;color:#555}
   .booking-expand{color:#555;font-size:0.75rem;white-space:nowrap}
 
+  .lead-card{border-left-color:var(--red)}
+  .lead-badge{background:rgba(227,18,18,0.12);border:1px solid rgba(227,18,18,0.4);color:var(--red)}
+  .lead-photo-badge{display:flex;align-items:center;gap:0.3rem;font-size:0.72rem;font-weight:700;color:var(--red);background:rgba(227,18,18,0.1);border:1px solid rgba(227,18,18,0.3);padding:0.25rem 0.55rem}
+  .photo-thumb-row{display:flex;gap:0.6rem;flex-wrap:wrap}
+  .photo-thumb{width:64px;height:64px;background:#1a1a1a;border:1px solid #333;cursor:pointer;background-size:cover;background-position:center;flex-shrink:0}
+  .photo-thumb-label{font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#555;margin-bottom:0.5rem}
+
+  .lightbox-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:1000;align-items:center;justify-content:center}
+  .lightbox-overlay.open{display:flex}
+  .lightbox-box{position:relative;width:100%;max-width:480px;display:flex;flex-direction:column;align-items:center;gap:0.85rem;padding:1.5rem}
+  .lightbox-close{position:absolute;top:0.9rem;right:0.9rem;background:rgba(26,26,26,0.9);border:1px solid #333;color:#f5f5f0;width:44px;height:44px;font-size:1.2rem;cursor:pointer;z-index:2}
+  .lightbox-img-wrap{width:100%;max-width:440px;height:340px;background:#1a1a1a;border:1px solid #333;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;touch-action:pan-y}
+  .lightbox-img-wrap img{max-width:100%;max-height:100%;object-fit:contain}
+  .lightbox-dots{position:absolute;bottom:0.8rem;left:50%;transform:translateX(-50%);display:flex;gap:0.3rem}
+  .lightbox-dot{width:6px;height:6px;border-radius:50%;background:#444}
+  .lightbox-dot.active{background:var(--red)}
+  .lightbox-meta{display:flex;align-items:center;justify-content:space-between;width:100%;color:#888;font-size:0.78rem}
+  .lightbox-meta a{color:var(--red);text-decoration:none;font-weight:700}
+  .lightbox-thumbs{display:flex;gap:0.5rem;overflow-x:auto;justify-content:center;width:100%;max-width:440px}
+  .lightbox-thumb{min-width:48px;height:48px;background:#1a1a1a;border:1px solid #333;flex-shrink:0;cursor:pointer;background-size:cover;background-position:center}
+  .lightbox-thumb.active{border:2px solid var(--red)}
+  .lightbox-arrow{background:#1a1a1a;border:1px solid #333;color:#f5f5f0;width:40px;height:40px;font-size:1.2rem;cursor:pointer;position:absolute;top:50%;transform:translateY(-50%);z-index:2}
+  .lightbox-arrow.prev{left:1.2rem}
+  .lightbox-arrow.next{right:1.2rem}
+  @media (max-width:640px){
+    .lightbox-arrow{display:none}
+    .lightbox-img-wrap{height:380px}
+  }
+
   .booking-details{display:none;padding:1rem 1.2rem;border-top:1px solid #1e1e1e}
   .booking-details.open{display:block}
   .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}
@@ -92,6 +121,8 @@
   .ftab{background:var(--gray);border:1px solid #222;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;padding:0.5rem 1rem;cursor:pointer;transition:all 0.2s}
   .ftab.active{background:var(--red);color:#fff;border-color:var(--red)}
   .ftab:hover:not(.active){border-color:#444;color:var(--white)}
+  .lead-count-badge{background:var(--red);color:#fff;border-radius:50%;font-size:0.62rem;padding:0.1rem 0.4rem;margin-left:0.3rem}
+  .ftab.active .lead-count-badge{background:#fff;color:var(--red)}
 
   /* ── LOADING ── */
   .loading{text-align:center;padding:3rem;color:var(--muted)}
@@ -358,12 +389,17 @@
   <div class="filter-tabs">
     <button class="ftab active" onclick="setFilter('upcoming', this)">Upcoming</button>
     <button class="ftab" onclick="setFilter('today', this)">Today</button>
+    <button class="ftab" id="ftab-leads" onclick="setFilter('leads', this)">New Leads<span id="leads-count-badge" class="lead-count-badge" style="display:none"></span></button>
     <button class="ftab" onclick="setFilter('all', this)">All Bookings</button>
     <button class="ftab" onclick="setFilter('past', this)">Past</button>
   </div>
 
   <div id="bookings-container">
     <div class="loading"><div class="spinner"></div><br>Loading bookings...</div>
+  </div>
+
+  <div id="leads-container" style="display:none">
+    <div class="loading"><div class="spinner"></div><br>Loading leads...</div>
   </div>
 
 <!-- Adjust Job Modal -->
@@ -690,6 +726,7 @@
     document.getElementById('admin-content').style.display = 'block';
     loadBookings();
     loadUnavailable();
+    loadLeads();
   }
 
   // ── Data ──
@@ -723,6 +760,133 @@
     }
   }
 
+  // ── Leads (contact form submissions) ──
+  let allLeads = [];
+
+  async function loadLeads() {
+    try {
+      const res = await fetch('/.netlify/functions/leads');
+      const data = await res.json();
+      allLeads = (data.leads || []).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      const badge = document.getElementById('leads-count-badge');
+      if (allLeads.length > 0) {
+        badge.textContent = allLeads.length;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      if (currentFilter === 'leads') renderLeads();
+    } catch(e) {
+      console.log('Could not load leads:', e);
+    }
+  }
+
+  function renderLeads() {
+    const container = document.getElementById('leads-container');
+    if (allLeads.length === 0) {
+      container.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>No new leads right now.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = allLeads.map((l, i) => {
+      const dateObj = new Date(l.createdAt);
+      const dateLabel = dateObj.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      const timeLabel = dateObj.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+      const subjectLabels = { quote:'Get a quote', estate:'Estate cleanout', commercial:'Business / commercial', recurring:'Recurring service', question:'General question', other:'Other' };
+      const subjectLabel = subjectLabels[l.subject] || 'Contact form';
+
+      const phone = l.phone ? `<a href="tel:${l.phone.replace(/\D/g,'')}">${l.phone}</a>` : '—';
+      const email = l.email ? `<a href="mailto:${l.email}">${l.email}</a>` : '—';
+      const photoBadge = l.photoCount > 0
+        ? `<span class="lead-photo-badge" title="${l.photoCount} photos attached">📷 ${l.photoCount}</span>`
+        : '';
+
+      return `<div class="booking-card lead-card">
+        <div class="booking-header" onclick="toggleLead(${i})">
+          <div class="booking-date-time">
+            <div class="booking-date">${dateLabel}</div>
+            <div class="booking-time">${timeLabel}</div>
+            <span class="booking-badge lead-badge">New Lead</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem">
+            ${photoBadge}
+            <div class="booking-name">${l.name || 'Unknown'}</div>
+            <div class="booking-expand" id="lead-expand-${i}">▼</div>
+          </div>
+        </div>
+        <div class="booking-details" id="lead-detail-${i}">
+          <div class="detail-grid">
+            <div class="detail-item"><div class="dl">Phone</div><div class="dv">${phone}</div></div>
+            <div class="detail-item"><div class="dl">Email</div><div class="dv">${email}</div></div>
+          </div>
+          <div class="dl" style="margin-bottom:0.4rem">Subject</div>
+          <div class="service-text" style="margin-bottom:0.75rem">${subjectLabel}</div>
+          <div class="notes-text">${(l.message || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+          ${l.photoCount > 0 ? `<div style="margin-top:1rem" id="lead-photos-${i}"></div>` : ''}
+          <div class="action-btns" style="margin-top:1rem">
+            ${l.phone ? `<a href="tel:${l.phone.replace(/\D/g,'')}" class="ab ab-red">📞 Call</a>` : ''}
+            ${l.phone ? `<a href="sms:${l.phone.replace(/\D/g,'')}" class="ab ab-ghost">💬 Text</a>` : ''}
+            <a href="mailto:${l.email}" class="ab ab-ghost">✉️ Reply</a>
+            <button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50;font-weight:700" onclick="convertLead('${l.leadId}')">✅ Convert to Booking</button>
+            <button class="ab ab-ghost" onclick="dismissLead('${l.leadId}')">🗑 Dismiss</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleLead(i) {
+    const detail = document.getElementById('lead-detail-' + i);
+    const expand = document.getElementById('lead-expand-' + i);
+    const open = detail.classList.toggle('open');
+    expand.textContent = open ? '▲' : '▼';
+    if (open) {
+      const lead = allLeads[i];
+      if (lead.photoCount > 0) loadPhotosFor('lead', lead.leadId, 'lead-photos-' + i);
+    }
+  }
+
+  async function dismissLead(leadId) {
+    if (!confirm('Dismiss this lead? It will be removed from your New Leads list.')) return;
+    const pw = prompt('Confirm your admin password:');
+    if (!pw) return;
+    try {
+      const res = await fetch('/.netlify/functions/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, leadId, action: 'dismiss' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to dismiss lead');
+      loadLeads();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function convertLead(leadId) {
+    const lead = allLeads.find(l => l.leadId === leadId);
+    if (!lead) return;
+    const pw = prompt('Confirm your admin password to convert this lead:');
+    if (!pw) return;
+    try {
+      const res = await fetch('/.netlify/functions/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, leadId, action: 'convert' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to convert lead');
+      loadLeads();
+      openNewBookingModal({ name: lead.name, phone: lead.phone, email: lead.email, notes: lead.message });
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+
   function updateStats() {
     const today = new Date().toISOString().split('T')[0];
     const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
@@ -742,7 +906,19 @@
     currentFilter = f;
     document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    renderBookings();
+
+    const bookingsContainer = document.getElementById('bookings-container');
+    const leadsContainer = document.getElementById('leads-container');
+
+    if (f === 'leads') {
+      bookingsContainer.style.display = 'none';
+      leadsContainer.style.display = 'block';
+      renderLeads();
+    } else {
+      bookingsContainer.style.display = 'block';
+      leadsContainer.style.display = 'none';
+      renderBookings();
+    }
   }
 
   function renderBookings() {
@@ -787,6 +963,9 @@
       const email = b.email ? `<a href="mailto:${b.email}">${b.email}</a>` : '—';
       const mapsUrl = b.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.address)}` : null;
       const address = mapsUrl ? `<a href="${mapsUrl}" target="_blank">${b.address || 'No address'}</a>` : (b.address || '—');
+      const photoBadge = b.photoCount > 0
+        ? `<span class="lead-photo-badge" title="${b.photoCount} photos attached">📷 ${b.photoCount}</span>`
+        : '';
 
       return `<div class="${cardClass}">
         <div class="booking-header" onclick="toggleBooking(${i})">
@@ -797,6 +976,7 @@
             ${completedBadge}
           </div>
           <div style="display:flex;align-items:center;gap:1rem">
+            ${photoBadge}
             <div class="booking-name">${b.customerName || 'Unknown'}</div>
             <div class="booking-expand" id="expand-${i}">▼</div>
           </div>
@@ -809,6 +989,7 @@
             <div class="detail-item"><div class="dl">Booked At</div><div class="dv">${b.bookedAt ? new Date(b.bookedAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}) : '—'}</div></div>
           </div>
           ${b.service ? `<div class="dl" style="margin-bottom:0.4rem">Service</div><div class="service-text">${b.service}</div>` : ''}
+          ${b.photoCount > 0 ? `<div style="margin-top:1rem" id="booking-photos-${i}"></div>` : ''}
           <div class="action-btns">
             ${b.phone ? `<a href="tel:${b.phone.replace(/\D/g,'')}" class="ab ab-red">📞 Call</a>` : ''}
             ${b.phone ? `<a href="sms:${b.phone.replace(/\D/g,'')}" class="ab ab-ghost">💬 Text</a>` : ''}
@@ -845,6 +1026,12 @@
     const expand = document.getElementById('expand-' + i);
     const open = detail.classList.toggle('open');
     expand.textContent = open ? '▲' : '▼';
+    if (open) {
+      const booking = allBookings[i];
+      if (booking.photoCount > 0 && booking.bookingId) {
+        loadPhotosFor('booking', booking.bookingId, 'booking-photos-' + i);
+      }
+    }
   }
 
   function fmtHr(hr) {
@@ -1089,7 +1276,7 @@
   }
 
   // ── Manual booking modal ──
-  function openNewBookingModal() {
+  function openNewBookingModal(prefill) {
     document.getElementById('new-booking-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
     const today = new Date().toISOString().split('T')[0];
@@ -1098,6 +1285,12 @@
     }
     document.getElementById('nb-result').style.display = 'none';
     resetAdminPricing();
+    if (prefill) {
+      if (prefill.name)  document.getElementById('nb-name').value = prefill.name;
+      if (prefill.phone) document.getElementById('nb-phone').value = prefill.phone;
+      if (prefill.email) document.getElementById('nb-email').value = prefill.email;
+      if (prefill.notes) document.getElementById('nb-notes').value = prefill.notes;
+    }
   }
   function closeNewBookingModal() {
     document.getElementById('new-booking-modal').classList.remove('open');
@@ -1645,9 +1838,134 @@
   window.adminCalNext = adminCalNext;
   window.adminCalToday = adminCalToday;
   window.clearCalFilter = clearCalFilter;
+  // ── Photo thumbnails + lightbox ──
+  let lightboxPhotos = [];
+  let lightboxIndex = 0;
+  let lightboxCaption = '';
+  const photoCache = {}; // `${parentType}_${parentId}` -> photos array, avoids refetching while a card stays open
+
+  async function loadPhotosFor(parentType, parentId, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const cacheKey = `${parentType}_${parentId}`;
+
+    if (photoCache[cacheKey]) {
+      renderPhotoThumbs(container, photoCache[cacheKey], parentType, parentId);
+      return;
+    }
+
+    container.innerHTML = `<div class="photo-thumb-label">📷 Loading photos…</div>`;
+    try {
+      const res = await fetch('/.netlify/functions/list-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentType, parentId })
+      });
+      const data = await res.json();
+      const photos = data.photos || [];
+      photoCache[cacheKey] = photos;
+      renderPhotoThumbs(container, photos, parentType, parentId);
+    } catch (e) {
+      container.innerHTML = `<div class="photo-thumb-label" style="color:#E31212">Could not load photos.</div>`;
+    }
+  }
+
+  function renderPhotoThumbs(container, photos, parentType, parentId) {
+    if (!photos.length) { container.innerHTML = ''; return; }
+    container.innerHTML = `
+      <div class="photo-thumb-label">📷 Customer photos (${photos.length})</div>
+      <div class="photo-thumb-row">
+        ${photos.map((p, i) => `<div class="photo-thumb" style="background-image:url('${p.url}')" onclick="openLightbox('${parentType}','${parentId}',${i})"></div>`).join('')}
+      </div>`;
+  }
+
+  function openLightbox(parentType, parentId, index) {
+    const cacheKey = `${parentType}_${parentId}`;
+    const photos = photoCache[cacheKey];
+    if (!photos || !photos.length) return;
+    lightboxPhotos = photos;
+    lightboxIndex = index;
+    lightboxCaption = parentType === 'booking'
+      ? (allBookings.find(b => b.bookingId === parentId)?.customerName || '')
+      : (allLeads.find(l => l.leadId === parentId)?.name || '');
+    document.getElementById('lightbox-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderLightbox();
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function lightboxNav(dir) {
+    lightboxIndex = (lightboxIndex + dir + lightboxPhotos.length) % lightboxPhotos.length;
+    renderLightbox();
+  }
+
+  function renderLightbox() {
+    const photo = lightboxPhotos[lightboxIndex];
+    document.getElementById('lightbox-img').src = photo.url;
+    document.getElementById('lightbox-download').href = photo.url;
+    document.getElementById('lightbox-caption').textContent =
+      `${lightboxIndex + 1} of ${lightboxPhotos.length}${lightboxCaption ? ' — ' + lightboxCaption : ''}`;
+
+    document.getElementById('lightbox-dots').innerHTML = lightboxPhotos.map((_, i) =>
+      `<div class="lightbox-dot${i === lightboxIndex ? ' active' : ''}"></div>`).join('');
+
+    document.getElementById('lightbox-thumbs').innerHTML = lightboxPhotos.map((p, i) =>
+      `<div class="lightbox-thumb${i === lightboxIndex ? ' active' : ''}" style="background-image:url('${p.url}')" onclick="lightboxIndex=${i};renderLightbox()"></div>`).join('');
+  }
+
+  // Swipe support (mobile primary interaction — see media query hiding arrows below 640px)
+  (function setupLightboxSwipe() {
+    const wrap = document.getElementById('lightbox-img-wrap');
+    let touchStartX = null;
+    wrap.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    wrap.addEventListener('touchend', (e) => {
+      if (touchStartX === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 40) lightboxNav(dx < 0 ? 1 : -1);
+      touchStartX = null;
+    }, { passive: true });
+  })();
+
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('lightbox-overlay').classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+  });
+
+  window.loadPhotosFor = loadPhotosFor;
+  window.openLightbox = openLightbox;
+  window.closeLightbox = closeLightbox;
+  window.lightboxNav = lightboxNav;
+  window.toggleLead = toggleLead;
+  window.dismissLead = dismissLead;
+  window.convertLead = convertLead;
 
   // Auto-refresh every 5 minutes
-  setInterval(() => { if (authed) loadBookings(); }, 5 * 60 * 1000);
+  setInterval(() => { if (authed) { loadBookings(); loadLeads(); } }, 5 * 60 * 1000);
 </script>
+
+<!-- Photo Lightbox -->
+<div class="lightbox-overlay" id="lightbox-overlay" onclick="if(event.target===this)closeLightbox()">
+  <div class="lightbox-box">
+    <button class="lightbox-close" aria-label="Close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-arrow prev" aria-label="Previous photo" onclick="lightboxNav(-1)">‹</button>
+    <button class="lightbox-arrow next" aria-label="Next photo" onclick="lightboxNav(1)">›</button>
+    <div class="lightbox-img-wrap" id="lightbox-img-wrap">
+      <img id="lightbox-img" src="" alt="Customer photo">
+      <div class="lightbox-dots" id="lightbox-dots"></div>
+    </div>
+    <div class="lightbox-meta">
+      <span id="lightbox-caption"></span>
+      <a id="lightbox-download" href="#" target="_blank" download>⬇ Download</a>
+    </div>
+    <div class="lightbox-thumbs" id="lightbox-thumbs"></div>
+  </div>
+</div>
+
 </body>
 </html>
