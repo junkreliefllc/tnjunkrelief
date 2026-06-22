@@ -964,6 +964,7 @@
         deposit:  depositAmt,
         balance:  balanceAmt,
         stripeId: paymentIntent.id,
+        priceMode: mode,
         notes:    encodeURIComponent(notes || ''),
         items:    encodeURIComponent(JSON.stringify(itemsPayload))
       });
@@ -1529,7 +1530,7 @@
         total = MINIMUM;
         html += `<div class="price-line" style="color:#888;font-size:0.78rem"><span>* $${MINIMUM} minimum service charge applied</span><span></span></div>`;
       }
-      el.innerHTML = html + `<div class="price-total-line"><span class="price-total-label">Estimated Total</span><span class="price-total-amt">$${total}</span></div>`;
+      el.innerHTML = html + `<div class="price-total-line"><span class="price-total-label">Total</span><span class="price-total-amt">$${total}</span></div>`;
 
       // Progress indicator
       updateDiscountProgress(totalQty);
@@ -1648,7 +1649,7 @@
         extraLine = `<br><strong>Service Minimum:</strong> $${MINIMUM} applied`;
       }
       const list = selectedItems.map(i=>`${qtys[i.id]}× ${i.label}`).join(', ');
-      pline=`<strong>Items:</strong> ${list}${discount>0?`<br><strong>Discount:</strong> ${discount*100}% off`:''}${extraLine}<br><strong>Estimated Total:</strong> $${total}`;
+      pline=`<strong>Items:</strong> ${list}${discount>0?`<br><strong>Discount:</strong> ${discount*100}% off`:''}${extraLine}<br><strong>Total:</strong> $${total}`;
     } else {
       const p=loadPrices[selLoadKey];
       pline=`<strong>Load Size:</strong> ${loadLabels[selLoadKey]}<br><strong>Estimated Total:</strong> ${p?'$'+p:'Call for Quote'}`;
@@ -1795,7 +1796,7 @@
       let subtotal = CATALOG.filter(i=>qtys[i.id]>0).reduce((s,i)=>s+qtys[i.id]*i.price,0);
       const total = Math.max(subtotal, MINIMUM);
       const list = CATALOG.filter(i=>qtys[i.id]>0).map(i=>`  ${qtys[i.id]}x ${i.label} ($${i.price} each)`).join('\n');
-      pricingStr=`Items Selected:\n${list}${total>subtotal?'\n\n  Minimum charge applied':''}  \n\nEstimated Total: $${total}`;
+      pricingStr=`Items Selected:\n${list}${total>subtotal?'\n\n  Minimum charge applied':''}  \n\nTotal: $${total}`;
     } else {
       pricingStr=`Load Size: ${loadLabels[selLoadKey]}\nEstimated Total: $${loadPrices[selLoadKey]}`;
     }
