@@ -199,7 +199,7 @@
   .copy-btn:hover{border-color:var(--red);color:var(--white)}
 
   /* ── Pricing Mode Tabs ── */
-  .mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:1rem;background:#222;border:1px solid #222;padding:4px}
+  .mode-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:1rem;background:#222;border:1px solid #222;padding:4px}
   .mode-tab{background:#111;border:1px solid transparent;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:800;font-size:0.72rem;letter-spacing:1.2px;text-transform:uppercase;padding:0.7rem 0.5rem;cursor:pointer;transition:all 0.15s;text-align:center}
   .mode-tab:hover{color:var(--white)}
   .mode-tab.active{background:var(--red);color:#fff;border-color:var(--red)}
@@ -523,6 +523,7 @@
         <button class="mode-tab active" data-mode="items" onclick="setAdminMode('items')">📦 Items</button>
         <button class="mode-tab" data-mode="load" onclick="setAdminMode('load')">🚛 Load Size</button>
         <button class="mode-tab" data-mode="labor" onclick="setAdminMode('labor')">⏱ Hourly</button>
+        <button class="mode-tab" data-mode="custom" onclick="setAdminMode('custom')">💲 Custom Price</button>
       </div>
 
       <!-- ITEMS MODE -->
@@ -552,6 +553,26 @@
         </div>
       </div>
 
+      <!-- CUSTOM PRICE MODE -->
+      <div class="mode-panel" id="admin-mode-custom">
+        <div style="background:#141414;border:1px solid #2a2a2a;border-left:3px solid var(--red);padding:1.1rem">
+          <div style="font-size:0.82rem;color:#aaa;line-height:1.6;margin-bottom:1rem">Enter the price you and the customer agreed on. This skips the item calculator and locks in your number.</div>
+          <div class="form-row">
+            <label>Agreed Total ($) *</label>
+            <input type="number" id="nb-custom-total" placeholder="e.g. 350" min="0" step="1" oninput="updateAdminLiveQuote()">
+          </div>
+          <div class="form-row">
+            <label>Deposit ($)</label>
+            <input type="number" id="nb-custom-deposit" placeholder="Auto: 25%" min="0" step="1" oninput="updateAdminLiveQuote()">
+            <div style="font-size:0.72rem;color:#666;margin-top:0.35rem">Leave blank to auto-calculate 25%. Enter 0 to collect the full amount after the job.</div>
+          </div>
+          <div class="form-row" style="margin-bottom:0">
+            <label>What's this job? (shown to customer)</label>
+            <input type="text" id="nb-custom-desc" placeholder="e.g. Garage cleanout — agreed rate">
+          </div>
+        </div>
+      </div>
+
       <!-- Live Quote -->
       <div class="live-quote empty" id="admin-live-quote">Select items, load size, or crew to see pricing</div>
 
@@ -560,15 +581,9 @@
         <label>Service Description (override / extra notes shown to customer)</label>
         <textarea id="nb-service" placeholder="Optional — leave blank to use auto-generated description from your selections"></textarea>
       </div>
-      <div class="form-grid-2">
-        <div class="form-row">
-          <label>Override Total ($)</label>
-          <input type="number" id="nb-total" placeholder="Auto from selections" min="0" step="1">
-        </div>
-        <div class="form-row">
-          <label>Override Deposit ($)</label>
-          <input type="number" id="nb-deposit" placeholder="Auto: 25% of total" min="0" step="1">
-        </div>
+      <div class="form-row">
+        <label>Override Deposit ($)</label>
+        <input type="number" id="nb-deposit" placeholder="Auto: 25% of total" min="0" step="1" oninput="updateAdminLiveQuote()">
       </div>
       <div class="form-row">
         <label>Internal Notes (not shown to customer)</label>
@@ -1256,6 +1271,21 @@
       const total = rate * adminHours;
       const lines = `${adminCrew} Man Crew @ $${rate}/hr × ${adminHours} hrs`;
       return { total, subtotal: total, lines, note: '', summary: lines };
+    } else if (adminMode === 'custom') {
+      const totalRaw = parseFloat(document.getElementById('nb-custom-total').value);
+      if (isNaN(totalRaw) || totalRaw <= 0) return null;
+      const total = Math.round(totalRaw);
+      const depRaw = document.getElementById('nb-custom-deposit').value.trim();
+      // Blank deposit -> auto 25%. An explicit 0 is allowed (collect full amount later).
+      let deposit;
+      if (depRaw === '') {
+        deposit = Math.ceil(total * 0.25);
+      } else {
+        const d = parseFloat(depRaw);
+        deposit = isNaN(d) || d < 0 ? Math.ceil(total * 0.25) : Math.round(d);
+      }
+      const desc = document.getElementById('nb-custom-desc').value.trim() || 'Custom agreed price';
+      return { total, subtotal: total, lines: desc, note: '', summary: desc, deposit, isCustom: true };
     }
     return null;
   }
@@ -1263,14 +1293,27 @@
   function updateAdminLiveQuote() {
     const q = getAdminQuote();
     const box = document.getElementById('admin-live-quote');
-    if (!q) { box.className = 'live-quote empty'; box.textContent = 'Select items, load size, or crew to see pricing'; return; }
-    const deposit = Math.ceil(q.total * 0.25);
+    if (!q) {
+      box.className = 'live-quote empty';
+      box.textContent = (adminMode === 'custom') ? 'Enter an agreed total to lock in the price' : 'Select items, load size, or crew to see pricing';
+      return;
+    }
+    // Default deposit: custom-mode explicit deposit, else 25% of total.
+    let deposit = (q.deposit !== undefined) ? q.deposit : Math.ceil(q.total * 0.25);
+    // If the Override Deposit field has a value, that wins and shows live.
+    const odEl = document.getElementById('nb-deposit');
+    if (odEl && odEl.value.trim() !== '') {
+      const od = parseFloat(odEl.value);
+      if (!isNaN(od) && od >= 0) deposit = Math.round(od);
+    }
+    const totalLabel = q.isCustom ? 'Total' : 'Estimated Total';
+    const depositLabel = q.isCustom ? 'Deposit' : 'Suggested Deposit (25%)';
     box.className = 'live-quote';
     box.innerHTML = `
       <div class="lq-line"><span>${q.lines.length > 60 ? q.lines.substr(0,60) + '...' : q.lines}</span><span><strong>$${q.subtotal || q.total}</strong></span></div>
       ${q.note ? `<div class="lq-line" style="color:#888;font-size:0.78rem"><span>${q.note}</span><span></span></div>` : ''}
-      <div class="lq-line"><span>Suggested Deposit (25%)</span><span>$${deposit}</span></div>
-      <div class="lq-total"><span>Estimated Total</span><span>$${q.total}</span></div>`;
+      <div class="lq-line"><span>${depositLabel}</span><span>$${deposit}</span></div>
+      <div class="lq-total"><span>${totalLabel}</span><span>$${q.total}</span></div>`;
   }
 
   function resetAdminPricing() {
@@ -1282,6 +1325,11 @@
     if (durSel) durSel.value = '2';
     document.getElementById('admin-item-search').value = '';
     document.getElementById('admin-hours-val').textContent = '2';
+    // Clear custom price fields
+    ['nb-custom-total','nb-custom-deposit','nb-custom-desc'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === 'items'));
     document.querySelectorAll('.mode-panel').forEach(p => p.classList.toggle('active', p.id === 'admin-mode-items'));
     renderAdminCats(); renderAdminItems(); renderAdminLoads(); renderAdminCrews();
@@ -1325,10 +1373,20 @@
     const quote = getAdminQuote();
     const overrideService = document.getElementById('nb-service').value.trim();
     const service = overrideService || (quote ? quote.summary : '');
-    const overrideTotal = parseFloat(document.getElementById('nb-total').value);
     const overrideDeposit = parseFloat(document.getElementById('nb-deposit').value);
-    const total = !isNaN(overrideTotal) && overrideTotal > 0 ? overrideTotal : (quote ? quote.total : 0);
-    const deposit = !isNaN(overrideDeposit) && overrideDeposit > 0 ? overrideDeposit : (quote ? Math.ceil(quote.total * 0.25) : 0);
+    const total = quote ? quote.total : 0;
+    // Deposit precedence: explicit Override Deposit field > custom-mode deposit
+    // (which may legitimately be 0) > auto 25% of total.
+    let deposit;
+    if (!isNaN(overrideDeposit) && overrideDeposit > 0) {
+      deposit = overrideDeposit;
+    } else if (quote && quote.deposit !== undefined) {
+      deposit = quote.deposit; // custom mode — can be 0
+    } else if (quote) {
+      deposit = Math.ceil(quote.total * 0.25);
+    } else {
+      deposit = 0;
+    }
     const notes = document.getElementById('nb-notes').value.trim();
     const paymentMode = document.querySelector('input[name="nb-payment"]:checked').value;
     const sendEmail = document.getElementById('nb-send-email').checked;
@@ -1342,6 +1400,13 @@
       banner.className = 'result-banner error';
       banner.style.display = 'block';
       banner.textContent = '⚠️ Please fill in customer name, date, time, and your password.';
+      return;
+    }
+
+    if (adminMode === 'custom' && (!total || total <= 0)) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Please enter an agreed total greater than $0 for the custom price.';
       return;
     }
 
@@ -1394,8 +1459,9 @@
         banner.innerHTML = html;
 
         // Clear form fields (keep password for next booking)
-        ['nb-name','nb-phone','nb-email','nb-address','nb-service','nb-total','nb-deposit','nb-notes'].forEach(id => {
-          document.getElementById(id).value = '';
+        ['nb-name','nb-phone','nb-email','nb-address','nb-service','nb-deposit','nb-notes'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
         });
         document.getElementById('nb-send-email').checked = false;
 
