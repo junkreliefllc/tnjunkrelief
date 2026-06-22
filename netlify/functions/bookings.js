@@ -81,7 +81,7 @@ exports.handler = async (event) => {
 
       await store.set('all-bookings', JSON.stringify(bookings));
 
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, bookingId }) };
     } catch(err) {
       console.error('POST error:', err.message);
       return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
