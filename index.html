@@ -540,7 +540,8 @@
     <div class="progress-bar">
       <div class="progress-step active" id="prog-1">1 · Pricing</div>
       <div class="progress-step" id="prog-2">2 · Date & Time</div>
-      <div class="progress-step" id="prog-3">3 · Your Info</div>
+      <div class="progress-step" id="prog-3">3 · Photos</div>
+      <div class="progress-step" id="prog-4">4 · Your Info</div>
     </div>
 
     <!-- STEP 1 -->
@@ -673,12 +674,36 @@
 
       <div class="wizard-nav">
         <button class="wiz-back" onclick="goStep(1)">← Back</button>
-        <button class="wiz-next" id="btn-continue-3" onclick="goStep(3)" style="display:none">Continue to Your Info →</button>
+        <button class="wiz-next" id="btn-continue-3" onclick="goStep(3)" style="display:none">Continue →</button>
       </div>
     </div>
 
-    <!-- STEP 3 -->
+    <!-- STEP 3: PHOTOS -->
     <div class="wizard-panel" id="panel-3">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:1px;color:var(--white);margin-bottom:0.3rem">Got photos?</div>
+      <p style="font-size:0.88rem;color:#888;line-height:1.6;margin-bottom:1.2rem">Snap a few pics of the items or area — it helps our crew show up ready for exactly what you've got. Totally optional.</p>
+
+      <input type="file" id="photo-input" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
+
+      <div id="photo-dropzone" onclick="document.getElementById('photo-input').click()" style="border:2px dashed #333;padding:2rem 1rem;text-align:center;margin-bottom:1rem;cursor:pointer;transition:border-color 0.2s">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">📷</div>
+        <div style="font-size:0.85rem;color:#ccc;font-weight:700;margin-bottom:0.2rem">Tap to add photos</div>
+        <div style="font-size:0.72rem;color:#666">Up to 12 photos</div>
+      </div>
+
+      <div id="photo-upload-error" style="display:none;color:#E31212;font-size:0.82rem;margin-bottom:1rem"></div>
+
+      <div id="photo-preview-row" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem"></div>
+
+      <div class="wizard-nav">
+        <button class="wiz-back" onclick="goStep(2)">← Back</button>
+        <button class="wiz-next" onclick="goStep(4)">Continue →</button>
+      </div>
+      <div style="text-align:center;margin-top:0.7rem"><a href="#" onclick="skipPhotosStep(event)" style="color:#666;font-size:0.78rem;text-decoration:underline">Skip this step</a></div>
+    </div>
+
+    <!-- STEP 4: YOUR INFO -->
+    <div class="wizard-panel" id="panel-4">
       <div class="booking-summary-box" id="bsb"></div>
 
       <div class="cf-row">
@@ -729,7 +754,7 @@
       </div>
 
       <div class="wizard-nav">
-        <button class="wiz-back" onclick="goStep(2)">← Back</button>
+        <button class="wiz-back" onclick="goStep(3)">← Back</button>
         <button class="wiz-next" id="pay-btn" onclick="handlePayment()">Pay & Confirm Booking →</button>
       </div>
       <div id="pay-loading" style="display:none;text-align:center;padding:1rem;color:#888;font-size:0.9rem">⏳ Processing payment...</div>
@@ -885,7 +910,7 @@
       const _totalAmt    = mode==='labor' ? crewRates[selectedCrew]*laborHours : amount;
 
       // Save booked slot to backend so it blocks for future customers
-      await saveBookedSlot(
+      const newBookingId = await saveBookedSlot(
         selDateKey,
         selStartHr,
         selStartHr + jobDurationHrs,
@@ -898,6 +923,15 @@
         _totalAmt,
         _depositAmt
       );
+
+      // Upload any photos the customer added in Step 3. This happens after
+      // payment so photos are tied to a real bookingId from the start.
+      // A failed upload never blocks or undoes the booking — it's already
+      // confirmed and paid for at this point.
+      let photoUploadResult = { uploaded: 0, failed: 0 };
+      if (newBookingId && selectedPhotos.length) {
+        photoUploadResult = await uploadBookingPhotos(newBookingId);
+      }
 
       // Build items payload for confirmation pages
       let itemsPayload = [];
@@ -962,6 +996,12 @@
         // Show fallback notice so customer knows booking is confirmed even if email is delayed
         const fallbackEl = document.getElementById('email-fallback-notice');
         if (fallbackEl) fallbackEl.style.display = 'block';
+      }
+
+      // If any selected photos failed to upload, let the confirmation page
+      // know so it can show a heads-up — booking itself is already confirmed.
+      if (photoUploadResult.failed > 0) {
+        confirmParams.set('photoIssue', '1');
       }
 
       // Redirect customer to confirmation page
@@ -1554,8 +1594,10 @@
     if (step===3 && currentStep===2) {
       if (!selDateKey) { alert('Please select a date.'); return; }
       if (!selStartHr && selStartHr !== 0) { alert('Please select a time slot.'); return; }
+    }
+    if (step===4 && currentStep===3) {
       buildSummaryBox();
-      // Mount Stripe elements after panel-3 becomes visible
+      // Mount Stripe elements after panel-4 becomes visible
       setTimeout(() => { if (window.Stripe && !cardNumber) initStripe(); }, 50);
     }
     if (step===2 && currentStep===1) {
@@ -1613,6 +1655,124 @@
     }
     const dateFormatted = selDateKey ? new Date(selDateKey+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) : '—';
     document.getElementById('bsb').innerHTML=`<strong>📅 Date:</strong> ${dateFormatted}<br><strong>🕐 Time:</strong> ${selTimeVal}<br>${pline}`;
+  }
+
+  // ── Photo Upload (Step 3) ──
+  const MAX_PHOTOS = 12;
+  const PHOTO_MAX_DIMENSION = 1200; // px, longest side
+  const PHOTO_QUALITY = 0.85;
+  let selectedPhotos = []; // [{dataUrl, filename}]
+
+  function skipPhotosStep(e) {
+    e.preventDefault();
+    goStep(4);
+  }
+
+  function handlePhotoSelect(event) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = ''; // allow re-selecting the same file later
+    const errEl = document.getElementById('photo-upload-error');
+    errEl.style.display = 'none';
+
+    const room = MAX_PHOTOS - selectedPhotos.length;
+    if (room <= 0) {
+      errEl.textContent = `You've reached the ${MAX_PHOTOS}-photo limit.`;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const toProcess = files.slice(0, room);
+    if (files.length > room) {
+      errEl.textContent = `Only added ${room} photo${room===1?'':'s'} — ${MAX_PHOTOS}-photo limit reached.`;
+      errEl.style.display = 'block';
+    }
+
+    toProcess.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      resizeImage(file).then(dataUrl => {
+        selectedPhotos.push({ dataUrl, filename: file.name.replace(/\.[^.]+$/, '') });
+        renderPhotoPreviews();
+      }).catch(() => {
+        errEl.textContent = 'One of your photos could not be processed. Please try a different photo.';
+        errEl.style.display = 'block';
+      });
+    });
+  }
+
+  function resizeImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > PHOTO_MAX_DIMENSION) {
+            height = Math.round(height * (PHOTO_MAX_DIMENSION / width));
+            width = PHOTO_MAX_DIMENSION;
+          } else if (height > PHOTO_MAX_DIMENSION) {
+            width = Math.round(width * (PHOTO_MAX_DIMENSION / height));
+            height = PHOTO_MAX_DIMENSION;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', PHOTO_QUALITY));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPhotoPreviews() {
+    const row = document.getElementById('photo-preview-row');
+    row.innerHTML = selectedPhotos.map((p, i) => `
+      <div style="width:64px;height:64px;background:#1a1a1a;border:1px solid #333;position:relative;flex-shrink:0;background-image:url('${p.dataUrl}');background-size:cover;background-position:center">
+        <span onclick="removePhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#E31212;color:#fff;width:18px;height:18px;border-radius:50%;font-size:0.65rem;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span>
+      </div>
+    `).join('') + (selectedPhotos.length < MAX_PHOTOS ? `
+      <div onclick="document.getElementById('photo-input').click()" style="width:64px;height:64px;background:#1a1a1a;border:1px dashed #333;display:flex;align-items:center;justify-content:center;color:#555;font-size:1.3rem;flex-shrink:0;cursor:pointer">+</div>
+    ` : '');
+  }
+
+  function removePhoto(index) {
+    selectedPhotos.splice(index, 1);
+    renderPhotoPreviews();
+    document.getElementById('photo-upload-error').style.display = 'none';
+  }
+
+  // Called after a booking is successfully created. Uploads any selected
+  // photos and tags them to the real bookingId. Never blocks or undoes
+  // the booking if an upload fails — the booking is already confirmed
+  // and paid for by this point.
+  async function uploadBookingPhotos(bookingId) {
+    if (!selectedPhotos.length || !bookingId) return { uploaded: 0, failed: 0 };
+    let uploaded = 0, failed = 0;
+    for (let i = 0; i < selectedPhotos.length; i++) {
+      const p = selectedPhotos[i];
+      try {
+        const res = await fetch('/.netlify/functions/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            parentType: 'booking',
+            parentId: bookingId,
+            photoIndex: i,
+            dataUrl: p.dataUrl,
+            filename: p.filename
+          })
+        });
+        const data = await res.json();
+        if (data.success) uploaded++; else failed++;
+      } catch (e) {
+        failed++;
+      }
+    }
+    return { uploaded, failed };
   }
 
   function submitBooking() {
@@ -1693,16 +1853,19 @@
 
   async function saveBookedSlot(dateKey, startHr, endHr, customerName, phone, email, service, stripeId, address, notes, total, deposit) {
     try {
-      await fetch('/.netlify/functions/bookings', {
+      const res = await fetch('/.netlify/functions/bookings', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ dateKey, startHr, endHr, customerName, phone, email, service, stripeId, address, notes, total, deposit })
       });
+      const data = await res.json();
       // Update local cache immediately
       if (!BOOKED_SLOTS[dateKey]) BOOKED_SLOTS[dateKey] = [];
       BOOKED_SLOTS[dateKey].push([startHr, endHr]);
+      return data.bookingId || null;
     } catch(e) {
       console.log('Could not save booked slot:', e);
+      return null;
     }
   }
 
