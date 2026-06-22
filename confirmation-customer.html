@@ -345,6 +345,10 @@
   <p>Your deposit has been charged and your appointment is locked in. We'll see you soon.</p>
 </div>
 
+<div id="photo-issue-notice" style="display:none;max-width:600px;margin:0 auto 1.5rem;background:#1a1a1a;border:1px solid #333;border-left:3px solid #f5a623;padding:1rem 1.25rem;font-size:0.88rem;color:#ccc;line-height:1.6">
+  📷 Your booking is confirmed, but one or more of your photos didn't upload successfully. No worries — just reply to your confirmation email with the photos attached and we'll take a look before we arrive.
+</div>
+
 <main>
 
   <!-- APPOINTMENT -->
@@ -384,7 +388,7 @@
         <!-- populated by JS -->
       </ul>
       <div class="total-box">
-        <span class="total-label">Estimated Total</span>
+        <span class="total-label" id="c-total-label">Estimated Total</span>
         <span class="total-amt" id="c-total">$0</span>
       </div>
       <div class="balance-note">
@@ -467,6 +471,11 @@
 
   const p = new URLSearchParams(window.location.search);
 
+  if (p.get('photoIssue') === '1') {
+    const notice = document.getElementById('photo-issue-notice');
+    if (notice) notice.style.display = 'block';
+  }
+
   function set(id, val) {
     const el = document.getElementById(id);
     if (el && val) el.textContent = val;
@@ -486,6 +495,15 @@
 
   // Build item list
   const itemsRaw = p.get('items');
+
+  // Itemized bookings have a firm, upfront price — call it "Total".
+  // Load-size, AI-photo, and hourly-labor bookings genuinely can vary,
+  // so those keep "Estimated Total".
+  const priceMode = p.get('priceMode');
+  const totalLabelEl = document.getElementById('c-total-label');
+  if (totalLabelEl) {
+    totalLabelEl.textContent = (priceMode === 'items') ? 'Total' : 'Estimated Total';
+  }
   const list = document.getElementById('c-item-list');
   if (itemsRaw) {
     try {
