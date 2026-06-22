@@ -564,6 +564,24 @@
         <label for="cf-message">Tell us about your job *</label>
         <textarea id="cf-message" required placeholder="e.g. I need to clean out my garage — about a couch, washer, and some old yard equipment. What would that cost?"></textarea>
       </div>
+
+      <div class="form-row">
+        <label>Add photos (optional)</label>
+        <div style="font-size:0.78rem;color:#777;margin-bottom:0.6rem">A few pics help us give you a more accurate quote.</div>
+
+        <input type="file" id="photo-input" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
+
+        <div id="photo-dropzone" onclick="document.getElementById('photo-input').click()" style="border:2px dashed #333;padding:1.4rem 1rem;text-align:center;margin-bottom:0.8rem;cursor:pointer">
+          <div style="font-size:1.5rem;margin-bottom:0.4rem">📷</div>
+          <div style="font-size:0.8rem;color:#ccc;font-weight:700">Tap to add photos</div>
+          <div style="font-size:0.7rem;color:#666;margin-top:0.15rem">Up to 12 photos</div>
+        </div>
+
+        <div id="photo-upload-error" style="display:none;color:#E31212;font-size:0.8rem;margin-bottom:0.6rem"></div>
+
+        <div id="photo-preview-row" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem"></div>
+      </div>
+
       <button type="submit" class="form-btn" id="cf-submit">Send Message →</button>
       <div class="form-result" id="cf-result"></div>
     </form>
@@ -590,6 +608,117 @@
     document.body.style.overflow = '';
   }
 
+  // ── Photo Upload ──
+  const MAX_PHOTOS = 12;
+  const PHOTO_MAX_DIMENSION = 1200;
+  const PHOTO_QUALITY = 0.85;
+  let selectedPhotos = [];
+
+  function handlePhotoSelect(event) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    const errEl = document.getElementById('photo-upload-error');
+    errEl.style.display = 'none';
+
+    const room = MAX_PHOTOS - selectedPhotos.length;
+    if (room <= 0) {
+      errEl.textContent = `You've reached the ${MAX_PHOTOS}-photo limit.`;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const toProcess = files.slice(0, room);
+    if (files.length > room) {
+      errEl.textContent = `Only added ${room} photo${room===1?'':'s'} — ${MAX_PHOTOS}-photo limit reached.`;
+      errEl.style.display = 'block';
+    }
+
+    toProcess.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      resizeImage(file).then(dataUrl => {
+        selectedPhotos.push({ dataUrl, filename: file.name.replace(/\.[^.]+$/, '') });
+        renderPhotoPreviews();
+      }).catch(() => {
+        errEl.textContent = 'One of your photos could not be processed. Please try a different photo.';
+        errEl.style.display = 'block';
+      });
+    });
+  }
+
+  function resizeImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > PHOTO_MAX_DIMENSION) {
+            height = Math.round(height * (PHOTO_MAX_DIMENSION / width));
+            width = PHOTO_MAX_DIMENSION;
+          } else if (height > PHOTO_MAX_DIMENSION) {
+            width = Math.round(width * (PHOTO_MAX_DIMENSION / height));
+            height = PHOTO_MAX_DIMENSION;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', PHOTO_QUALITY));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPhotoPreviews() {
+    const row = document.getElementById('photo-preview-row');
+    row.innerHTML = selectedPhotos.map((p, i) => `
+      <div style="width:56px;height:56px;background:#1a1a1a;border:1px solid #333;position:relative;flex-shrink:0;background-image:url('${p.dataUrl}');background-size:cover;background-position:center">
+        <span onclick="removePhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#E31212;color:#fff;width:16px;height:16px;border-radius:50%;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span>
+      </div>
+    `).join('') + (selectedPhotos.length < MAX_PHOTOS ? `
+      <div onclick="document.getElementById('photo-input').click()" style="width:56px;height:56px;background:#1a1a1a;border:1px dashed #333;display:flex;align-items:center;justify-content:center;color:#555;font-size:1.1rem;flex-shrink:0;cursor:pointer">+</div>
+    ` : '');
+  }
+
+  function removePhoto(index) {
+    selectedPhotos.splice(index, 1);
+    renderPhotoPreviews();
+    document.getElementById('photo-upload-error').style.display = 'none';
+  }
+
+  // Uploads selected photos tagged to a leadId. Never blocks the form
+  // submission — the lead is already saved and emailed by this point.
+  async function uploadLeadPhotos(leadId) {
+    if (!selectedPhotos.length || !leadId) return { uploaded: 0, failed: 0 };
+    let uploaded = 0, failed = 0;
+    for (let i = 0; i < selectedPhotos.length; i++) {
+      const p = selectedPhotos[i];
+      try {
+        const res = await fetch('/.netlify/functions/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            parentType: 'lead',
+            parentId: leadId,
+            photoIndex: i,
+            dataUrl: p.dataUrl,
+            filename: p.filename
+          })
+        });
+        const data = await res.json();
+        if (data.success) uploaded++; else failed++;
+      } catch (e) {
+        failed++;
+      }
+    }
+    return { uploaded, failed };
+  }
+
   async function submitContact(e) {
     e.preventDefault();
     const name = document.getElementById('cf-name').value.trim();
@@ -613,18 +742,27 @@
     btn.innerHTML = '<span class="spinner"></span>Sending...';
 
     try {
-      const res = await fetch('/.netlify/functions/contact', {
+      const res = await fetch('/.netlify/functions/submit-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, subject, message })
+        body: JSON.stringify({ name, phone, email, subject, message, photoCount: selectedPhotos.length })
       });
       const data = await res.json();
 
       if (data.success) {
+        let photoNote = '';
+        if (selectedPhotos.length && data.leadId) {
+          const photoResult = await uploadLeadPhotos(data.leadId);
+          if (photoResult.failed > 0) {
+            photoNote = ' (Note: one or more photos didn\'t upload — feel free to email them directly if needed.)';
+          }
+        }
         result.className = 'form-result success';
         result.style.display = 'block';
-        result.innerHTML = "✅ Message sent! We'll get back to you within an hour during business hours.";
+        result.innerHTML = "✅ Message sent! We'll get back to you within an hour during business hours." + photoNote;
         document.getElementById('contact-form').reset();
+        selectedPhotos = [];
+        renderPhotoPreviews();
       } else {
         result.className = 'form-result error';
         result.style.display = 'block';
