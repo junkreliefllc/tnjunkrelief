@@ -119,6 +119,7 @@
   /* NAV */
   nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.2rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(8px);border-bottom:2px solid var(--yellow)}
   .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none;position:relative;z-index:301}
+  .hamburger.open{visibility:hidden;pointer-events:none}
   .hamburger span{display:block;width:24px;height:2px;background:var(--white);transition:all 0.3s}
   .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .hamburger.open span:nth-child(2){opacity:0}
@@ -471,7 +472,8 @@
     <span></span><span></span><span></span>
   </button>
 </nav>
-<div class="mobile-menu" id="mobile-menu">
+<div class="mobile-menu" id="mobile-menu" onclick="if(event.target===this)closeMobileMenu()">
+  <button onclick="closeMobileMenu()" aria-label="Close menu" style="position:absolute;top:1.25rem;right:1.5rem;background:none;border:none;color:#fff;font-size:2rem;line-height:1;cursor:pointer;padding:0.25rem 0.5rem;z-index:302">&times;</button>
   <a href="#services" onclick="closeMobileMenu()">Services</a>
   <a href="#how" onclick="closeMobileMenu()">How It Works</a>
   <a href="#booking" onclick="closeMobileMenu()">Pricing</a>
