@@ -445,6 +445,46 @@
   </div>
 </div>
 
+<!-- Reschedule Modal -->
+<div class="modal-overlay" id="reschedule-modal" onclick="if(event.target===this)closeRescheduleModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📅 Reschedule</h2>
+      <button class="modal-close" onclick="closeRescheduleModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="result-banner" id="resched-result"></div>
+
+      <div style="background:#111;border-left:3px solid #3a9bdc;padding:0.9rem 1.1rem;margin-bottom:1.25rem;font-size:0.88rem;color:#ccc;line-height:1.6">
+        Rescheduling <strong style="color:#fff" id="resched-customer">—</strong><br>
+        <span style="color:#888;font-size:0.82rem">Currently: <span id="resched-current">—</span></span>
+      </div>
+
+      <div class="form-row">
+        <label>New Date * <span style="color:#666;font-weight:400;font-size:0.78rem">(Tue–Fri only)</span></label>
+        <input type="date" id="resched-date" onchange="updateRescheduleSlots()">
+      </div>
+
+      <div class="form-row">
+        <label>New Start Time *</label>
+        <select id="resched-time">
+          <option value="">Pick a date first</option>
+        </select>
+      </div>
+
+      <div class="form-section-heading">Confirm</div>
+      <div class="form-row">
+        <label>Your Admin Password *</label>
+        <input type="password" id="resched-password" placeholder="Required to reschedule">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-cancel" onclick="closeRescheduleModal()">Cancel</button>
+      <button class="btn-modal btn-create" onclick="submitReschedule()" id="resched-submit">Move Booking</button>
+    </div>
+  </div>
+</div>
+
 <!-- Manual Booking Modal -->
 <div class="modal-overlay" id="new-booking-modal" onclick="if(event.target===this)closeNewBookingModal()">
   <div class="modal">
@@ -1040,6 +1080,7 @@
                 : `<button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50;font-weight:700" onclick="toggleComplete('${b.dateKey}', '${b.bookingId || ''}', ${b.startHr || 0}, 'mark')">✅ Mark Complete</button>`
               }
               <button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50" onclick="openAdjustModal('${b.dateKey}', ${b.startHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">➕ Adjust Job</button>
+              <button class="ab" style="background:#2a2a2a;border:1px solid #3a9bdc;color:#3a9bdc" onclick="openRescheduleModal('${b.dateKey}', '${b.bookingId || ''}', '${b.stripeId || ''}', ${b.startHr || 0}, ${b.endHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">📅 Reschedule</button>
               ${b.balanceRequest && b.balanceRequest.status === 'paid'
                 ? `<span class="ab" style="background:#1a3a1a;border:1px solid #4caf50;color:#4caf50;cursor:default">✅ Balance Paid${b.balanceRequest.tipPaid > 0 ? ` (+$${b.balanceRequest.tipPaid} tip)` : ''}</span>`
                 : `<button class="ab" style="background:#2a2a2a;border:1px solid #E31212;color:#E31212" onclick="openBalanceModal('${b.bookingId || ''}', '${b.dateKey}', ${b.total || 0}, ${b.deposit || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}', '${b.email || ''}')">💳 Send Balance Request</button>`
@@ -2073,6 +2114,148 @@
   window.toggleLead = toggleLead;
   window.dismissLead = dismissLead;
   window.convertLead = convertLead;
+
+  // ── Reschedule (admin) ──
+  let reschedCtx = null; // { oldDateKey, bookingId, stripeId, startHr, endHr, duration }
+
+  function openRescheduleModal(oldDateKey, bookingId, stripeId, startHr, endHr, customerName) {
+    const duration = (endHr - startHr) || 2;
+    reschedCtx = { oldDateKey, bookingId, stripeId, startHr, endHr, duration };
+    document.getElementById('resched-customer').textContent = customerName || 'this booking';
+    document.getElementById('resched-current').textContent =
+      `${fmtRDate(oldDateKey)} at ${fmtRHr(startHr)} (${duration}-hour job)`;
+    document.getElementById('resched-date').value = '';
+    document.getElementById('resched-password').value = '';
+    const sel = document.getElementById('resched-time');
+    sel.innerHTML = '<option value="">Pick a date first</option>';
+    const banner = document.getElementById('resched-result');
+    banner.style.display = 'none';
+    banner.className = 'result-banner';
+    document.getElementById('reschedule-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeRescheduleModal() {
+    document.getElementById('reschedule-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    reschedCtx = null;
+  }
+
+  function fmtRHr(hr) {
+    const suffix = hr >= 12 ? 'PM' : 'AM';
+    const h = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    return `${h}:00 ${suffix}`;
+  }
+  function fmtRDate(dk) {
+    try { return new Date(`${dk}T12:00:00`).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }); }
+    catch(e) { return dk; }
+  }
+
+  // Build the time dropdown for the chosen new date, showing only open start
+  // times (respecting duration, the 6pm end limit, and existing bookings).
+  function updateRescheduleSlots() {
+    const sel = document.getElementById('resched-time');
+    const banner = document.getElementById('resched-result');
+    banner.style.display = 'none';
+    if (!reschedCtx) return;
+    const dateKey = document.getElementById('resched-date').value;
+    if (!dateKey) { sel.innerHTML = '<option value="">Pick a date first</option>'; return; }
+
+    // Tue–Fri only (2..5)
+    const dow = new Date(`${dateKey}T12:00:00`).getDay();
+    if (![2,3,4,5].includes(dow)) {
+      sel.innerHTML = '<option value="">Closed — pick Tue–Fri</option>';
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ We only run jobs Tuesday through Friday. Please choose a weekday.';
+      return;
+    }
+
+    const duration = reschedCtx.duration;
+    // Existing bookings on that date (exclude this same booking so it doesn't block itself)
+    const taken = allBookings.filter(b =>
+      b.dateKey === dateKey && b.bookingId !== reschedCtx.bookingId
+    ).map(b => [b.startHr, b.endHr]);
+
+    const startHours = [8,9,10,11,12,13,14,15,16];
+    const options = [];
+    for (const h of startHours) {
+      const end = h + duration;
+      if (end > 18) continue; // would run past 6pm
+      const clash = taken.some(([bs,be]) => h < be && end > bs);
+      if (clash) continue;
+      options.push(`<option value="${h}">${fmtRHr(h)} – ${fmtRHr(end)}</option>`);
+    }
+
+    if (options.length === 0) {
+      sel.innerHTML = '<option value="">No open times this day</option>';
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ No open slots that fit this job on that date. Try another day.';
+    } else {
+      sel.innerHTML = '<option value="">Select a time…</option>' + options.join('');
+    }
+  }
+
+  async function submitReschedule() {
+    if (!reschedCtx) return;
+    const banner = document.getElementById('resched-result');
+    banner.className = 'result-banner';
+    banner.style.display = 'none';
+
+    const newDateKey = document.getElementById('resched-date').value;
+    const newStartHr = parseInt(document.getElementById('resched-time').value);
+    const password = document.getElementById('resched-password').value;
+
+    if (!newDateKey || isNaN(newStartHr) || !password) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Please pick a new date, a time, and enter your password.';
+      return;
+    }
+
+    const btn = document.getElementById('resched-submit');
+    btn.disabled = true; btn.textContent = 'Moving…';
+
+    try {
+      const res = await fetch('/.netlify/functions/reschedule-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          via: 'admin',
+          password,
+          oldDateKey: reschedCtx.oldDateKey,
+          bookingId: reschedCtx.bookingId,
+          stripeId: reschedCtx.stripeId,
+          newDateKey,
+          newStartHr
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        banner.className = 'result-banner success';
+        banner.style.display = 'block';
+        banner.textContent = '✅ ' + (data.message || 'Booking moved.');
+        loadBookings();
+        setTimeout(closeRescheduleModal, 1200);
+      } else {
+        banner.className = 'result-banner error';
+        banner.style.display = 'block';
+        banner.textContent = '❌ ' + (data.error || 'Could not reschedule.');
+      }
+    } catch (err) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '❌ Network error: ' + err.message;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Move Booking';
+    }
+  }
+
+  window.openRescheduleModal = openRescheduleModal;
+  window.closeRescheduleModal = closeRescheduleModal;
+  window.updateRescheduleSlots = updateRescheduleSlots;
+  window.submitReschedule = submitReschedule;
 
   // Auto-refresh every 5 minutes
   setInterval(() => { if (authed) { loadBookings(); loadLeads(); } }, 5 * 60 * 1000);
