@@ -35,6 +35,7 @@ exports.handler = async (event) => {
       deposit,
       balance,
       stripeId,
+      bookingId,
       notes,
       items,        // array: [{name, qty, unit, sub}]
       pricingStr    // fallback plain-text summary
@@ -66,6 +67,11 @@ exports.handler = async (event) => {
     const cancelUrl = `https://tnjunkrelief.com/cancel.html?token=${encodeURIComponent(cancelToken)}&dateKey=${encodeURIComponent(dateKey||'')}` +
       `&startHr=${startHr||''}&stripeId=${encodeURIComponent(stripeId)}&name=${encodeURIComponent(customerName)}` +
       `&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone||'')}&date=${encodeURIComponent(date||'')}&time=${encodeURIComponent(time||'')}`;
+
+    // ── Reschedule URL (same token scheme; self-service page) ──
+    const rescheduleUrl = `https://tnjunkrelief.com/reschedule.html?token=${encodeURIComponent(cancelToken)}&dateKey=${encodeURIComponent(dateKey||'')}` +
+      `&startHr=${startHr||''}&bookingId=${encodeURIComponent(bookingId||'')}&stripeId=${encodeURIComponent(stripeId)}` +
+      `&name=${encodeURIComponent(customerName)}&date=${encodeURIComponent(date||'')}&time=${encodeURIComponent(time||'')}`;
 
     // ── CUSTOMER EMAIL ──────────────────────────────────────────────────────
     const customerHtml = `
@@ -185,10 +191,13 @@ exports.handler = async (event) => {
       </table>
     </td></tr>
 
-    <!-- Cancel Link -->
+    <!-- Reschedule + Cancel Links -->
     <tr><td style="padding:16px 32px 0">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #1e1e1e;padding:12px 16px">
-        <tr><td style="color:#555;font-size:12px;line-height:1.6">
+        <tr><td style="color:#555;font-size:12px;line-height:1.7">
+          Need a different time? You can reschedule up to 24 hours before your appointment.<br>
+          <a href="${rescheduleUrl}" style="color:#3a9bdc;font-size:12px;font-weight:700">📅 Reschedule this booking →</a>
+          <br><br>
           Need to cancel? You can cancel for a full refund up to 24 hours before your appointment.<br>
           <a href="${cancelUrl}" style="color:#666;font-size:11px">Cancel this booking →</a>
         </td></tr>
