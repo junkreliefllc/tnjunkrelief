@@ -485,6 +485,50 @@
   </div>
 </div>
 
+<!-- Mark Complete Modal -->
+<div class="modal-overlay" id="complete-modal" onclick="if(event.target===this)closeCompleteModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>✅ Mark Complete</h2>
+      <button class="modal-close" onclick="closeCompleteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="result-banner" id="complete-result"></div>
+
+      <div style="background:#111;border-left:3px solid #4caf50;padding:0.9rem 1.1rem;margin-bottom:1.25rem;font-size:0.88rem;color:#ccc;line-height:1.6">
+        Marking <strong style="color:#fff" id="complete-customer">—</strong> as complete.
+      </div>
+
+      <!-- Optional completion photo -->
+      <div class="form-row">
+        <label>Completion Photo <span style="color:#666;font-weight:400;font-size:0.78rem">(optional — proof of finished job)</span></label>
+        <div id="complete-photo-preview" style="display:none;margin-bottom:0.6rem"></div>
+        <button type="button" class="btn-modal" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50;width:100%" onclick="document.getElementById('complete-photo-input').click()">📷 Add Photo (camera or library)</button>
+        <input type="file" id="complete-photo-input" accept="image/*" multiple style="display:none" onchange="handleCompletePhotos(event)">
+        <div style="font-size:0.72rem;color:#666;margin-top:0.4rem">Snap the cleared space or attach from your camera roll. Stored as dispute evidence with a timestamp.</div>
+      </div>
+
+      <!-- Optional customer email -->
+      <div class="form-row">
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.9rem;color:#ddd">
+          <input type="checkbox" id="complete-send-email" style="width:auto;margin:0">
+          Email the customer a "job complete" confirmation
+        </label>
+      </div>
+
+      <div class="form-section-heading">Confirm</div>
+      <div class="form-row">
+        <label>Your Admin Password *</label>
+        <input type="password" id="complete-password" placeholder="Required to mark complete">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-cancel" onclick="closeCompleteModal()">Cancel</button>
+      <button class="btn-modal btn-create" onclick="submitComplete()" id="complete-submit" style="background:#1a3a1a;border:1px solid #4caf50;color:#4caf50">Mark Complete</button>
+    </div>
+  </div>
+</div>
+
 <!-- Manual Booking Modal -->
 <div class="modal-overlay" id="new-booking-modal" onclick="if(event.target===this)closeNewBookingModal()">
   <div class="modal">
@@ -1077,7 +1121,7 @@
               ${b.jobStatus === 'completed'
                 ? `<span class="ab" style="background:#1a3a1a;border:1px solid #4caf50;color:#4caf50;cursor:default">✅ Completed${b.completedAt ? ` ${new Date(b.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}</span>
                    <button class="ab ab-ghost" onclick="toggleComplete('${b.dateKey}', '${b.bookingId || ''}', ${b.startHr || 0}, 'unmark')" style="font-size:0.65rem">↶ Undo</button>`
-                : `<button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50;font-weight:700" onclick="toggleComplete('${b.dateKey}', '${b.bookingId || ''}', ${b.startHr || 0}, 'mark')">✅ Mark Complete</button>`
+                : `<button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50;font-weight:700" onclick="toggleComplete('${b.dateKey}', '${b.bookingId || ''}', ${b.startHr || 0}, 'mark', '${(b.customerName || 'this booking').replace(/'/g,'')}')">✅ Mark Complete</button>`
               }
               <button class="ab" style="background:#2a2a2a;border:1px solid #4caf50;color:#4caf50" onclick="openAdjustModal('${b.dateKey}', ${b.startHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">➕ Adjust Job</button>
               <button class="ab" style="background:#2a2a2a;border:1px solid #3a9bdc;color:#3a9bdc" onclick="openRescheduleModal('${b.dateKey}', '${b.bookingId || ''}', '${b.stripeId || ''}', ${b.startHr || 0}, ${b.endHr || 0}, '${(b.customerName || 'customer').replace(/'/g,'')}')">📅 Reschedule</button>
@@ -1847,37 +1891,202 @@
   window.loadUnavailable = loadUnavailable;
 
   // ── Mark job complete / uncomplete ──
-  async function toggleComplete(dateKey, bookingId, startHr, action) {
-    const verb = action === 'mark' ? 'Mark this job as complete' : 'Undo the completed status';
-    if (!confirm(`${verb}?`)) return;
-    const pw = prompt('Confirm your admin password:');
-    if (!pw) return;
+  let completeCtx = null;          // { dateKey, bookingId, startHr, customerName }
+  let completePhotos = [];         // resized dataURLs queued for upload
+
+  // "undo" stays a quick confirm; "mark" opens the completion modal (optional photo + email)
+  async function toggleComplete(dateKey, bookingId, startHr, action, customerName) {
+    if (action === 'unmark') {
+      if (!confirm('Undo the completed status?')) return;
+      const pw = prompt('Confirm your admin password:');
+      if (!pw) return;
+      try {
+        const res = await fetch('/.netlify/functions/complete-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw, dateKey, bookingId: bookingId || null, startHr, action: 'unmark' })
+        });
+        const text = await res.text();
+        let data; try { data = JSON.parse(text); } catch(e) { throw new Error(`Server returned non-JSON (status ${res.status})`); }
+        if (!res.ok) throw new Error(data.error || `Failed with status ${res.status}`);
+        loadBookings();
+      } catch (err) { alert('Error: ' + err.message); }
+      return;
+    }
+    // action === 'mark' -> open modal
+    openCompleteModal(dateKey, bookingId, startHr, customerName);
+  }
+  window.toggleComplete = toggleComplete;
+
+  function openCompleteModal(dateKey, bookingId, startHr, customerName) {
+    completeCtx = { dateKey, bookingId, startHr, customerName: customerName || 'this booking' };
+    completePhotos = [];
+    document.getElementById('complete-customer').textContent = completeCtx.customerName;
+    document.getElementById('complete-password').value = '';
+    document.getElementById('complete-send-email').checked = false;
+    const prev = document.getElementById('complete-photo-preview');
+    prev.style.display = 'none';
+    prev.innerHTML = '';
+    const banner = document.getElementById('complete-result');
+    banner.style.display = 'none';
+    banner.className = 'result-banner';
+    document.getElementById('complete-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCompleteModal() {
+    document.getElementById('complete-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    completeCtx = null;
+    completePhotos = [];
+  }
+  window.closeCompleteModal = closeCompleteModal;
+
+  // Resize photos in-browser (same approach as the booking flow) and preview them
+  async function handleCompletePhotos(event) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = ''; // allow re-picking same file
+    const prev = document.getElementById('complete-photo-preview');
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue;
+      if (completePhotos.length >= 6) { alert('Up to 6 completion photos.'); break; }
+      try {
+        const dataUrl = await resizeCompletePhoto(file);
+        completePhotos.push(dataUrl);
+      } catch (e) {
+        console.warn('Could not process a photo:', e.message);
+      }
+    }
+    if (completePhotos.length) {
+      prev.style.display = 'flex';
+      prev.style.flexWrap = 'wrap';
+      prev.style.gap = '0.4rem';
+      prev.innerHTML = completePhotos.map((u, i) =>
+        `<div style="position:relative;width:64px;height:64px;border-radius:4px;background-image:url('${u}');background-size:cover;background-position:center">
+           <button onclick="removeCompletePhoto(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#E31212;color:#fff;border:none;font-size:12px;line-height:1;cursor:pointer">×</button>
+         </div>`).join('');
+    } else {
+      prev.style.display = 'none';
+      prev.innerHTML = '';
+    }
+  }
+  window.handleCompletePhotos = handleCompletePhotos;
+
+  function removeCompletePhoto(i) {
+    completePhotos.splice(i, 1);
+    // re-render
+    const prev = document.getElementById('complete-photo-preview');
+    if (completePhotos.length) {
+      prev.innerHTML = completePhotos.map((u, idx) =>
+        `<div style="position:relative;width:64px;height:64px;border-radius:4px;background-image:url('${u}');background-size:cover;background-position:center">
+           <button onclick="removeCompletePhoto(${idx})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#E31212;color:#fff;border:none;font-size:12px;line-height:1;cursor:pointer">×</button>
+         </div>`).join('');
+    } else {
+      prev.style.display = 'none';
+      prev.innerHTML = '';
+    }
+  }
+  window.removeCompletePhoto = removeCompletePhoto;
+
+  function resizeCompletePhoto(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1200;
+          let { width, height } = img;
+          if (width > MAX || height > MAX) {
+            if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+            else { width = Math.round(width * MAX / height); height = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = () => reject(new Error('decode failed'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('read failed'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function submitComplete() {
+    if (!completeCtx) return;
+    const banner = document.getElementById('complete-result');
+    banner.className = 'result-banner';
+    banner.style.display = 'none';
+
+    const password = document.getElementById('complete-password').value;
+    const sendEmail = document.getElementById('complete-send-email').checked;
+    if (!password) {
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Please enter your admin password.';
+      return;
+    }
+
+    const btn = document.getElementById('complete-submit');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
     try {
+      // 1. Mark complete (and request the optional email)
       const res = await fetch('/.netlify/functions/complete-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          password: pw,
-          dateKey: dateKey,
-          bookingId: bookingId || null,
-          startHr: startHr,
-          action: action
+          password,
+          dateKey: completeCtx.dateKey,
+          bookingId: completeCtx.bookingId || null,
+          startHr: completeCtx.startHr,
+          action: 'mark',
+          sendEmail,
+          hasCompletionPhotos: completePhotos.length > 0
         })
       });
-      // Read as text first so we can show useful errors on non-JSON responses
       const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); }
-      catch(e) {
-        throw new Error(`Server returned non-JSON (status ${res.status}): ${text.substring(0,150)}`);
-      }
+      let data; try { data = JSON.parse(text); } catch(e) { throw new Error(`Server returned non-JSON (status ${res.status})`); }
       if (!res.ok) throw new Error(data.error || `Failed with status ${res.status}`);
+
+      // 2. Upload completion photos (best-effort) against the booking
+      let photoFailed = 0;
+      if (completePhotos.length && completeCtx.bookingId) {
+        for (let i = 0; i < completePhotos.length; i++) {
+          try {
+            const up = await fetch('/.netlify/functions/upload-photo', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                parentType: 'booking',
+                parentId: completeCtx.bookingId,
+                photoIndex: Date.now() + i, // unique-ish index so completion pics don't overwrite booking pics
+                dataUrl: completePhotos[i],
+                filename: `completion_${i}`
+              })
+            });
+            if (!up.ok) photoFailed++;
+          } catch (e) { photoFailed++; }
+        }
+      }
+
+      banner.className = 'result-banner success';
+      banner.style.display = 'block';
+      banner.textContent = '✅ Marked complete.' +
+        (completePhotos.length ? ` ${completePhotos.length - photoFailed} photo(s) saved.` : '') +
+        (sendEmail ? ' Customer emailed.' : '') +
+        (photoFailed ? ` ⚠️ ${photoFailed} photo(s) failed to upload.` : '');
       loadBookings();
+      setTimeout(closeCompleteModal, 1300);
     } catch (err) {
-      alert('Error: ' + err.message);
+      banner.className = 'result-banner error';
+      banner.style.display = 'block';
+      banner.textContent = '❌ ' + err.message;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Mark Complete';
     }
   }
-  window.toggleComplete = toggleComplete;
+  window.submitComplete = submitComplete;
 
   // ── Delete booking (with optional refund) ──
   async function deleteBooking(dateKey, startHr, stripeId, refund, customerName) {
